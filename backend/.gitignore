@@ -1,0 +1,83 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual environment
+venv/
+ENV/
+env/
+.venv/
+.python-version
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+db.sqlite3
+*.sqlite3
+
+# Media & static files (user uploads, etc.)
+media/
+staticfiles/
+static/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test coverage & reports
+htmlcov/
+.coverage
+.tox/
+.noseids
+*.cover
+coverage.xml
+
+# Pytest
+.pytest_cache/
+
+# Migrations (optional: remove if you want to keep them in git)
+# **Comment out the next line if you want to version migrations**
+migrations/
+# PyCharm
+
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Idea
+.idea/
+
+# pip-tools
+*.txt
+!requirements.txt
+
+# Build
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Backup files
+*~
+*.bak
+*.swp
+*.swo
+
+# dotenv
+.env
+.env.*
