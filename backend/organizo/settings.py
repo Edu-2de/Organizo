@@ -106,3 +106,5 @@ REST_FRAMEWORK = {
 }
 
 SITE_ID = 1
+
+AUTH_USER_MODEL = 'usuarios.Usuario'
