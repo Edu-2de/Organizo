@@ -31,10 +31,10 @@ const slogans = [
 ];
 
 const layouts = [
-  "stacked",      // Frase animada fora da caixa branca, tudo centralizado
-  "sidebyside",   // Layout inovador: tela dividida
-  "together",     // Layout inovador: timeline curva
-  "movable"       // Caixa branca pode ser movida livremente
+  "stacked",
+  "sidebyside",
+  "together",
+  "movable"
 ];
 
 export default function Hero() {
@@ -53,42 +53,60 @@ export default function Hero() {
 
   // Movable box state
   const [boxPos, setBoxPos] = useState({ x: 0, y: 0 });
+  const [velocity, setVelocity] = useState({ vx: 0, vy: 0 });
   const [dragging, setDragging] = useState(false);
-  const dragStart = useRef<{ x: number; y: number; mouseX: number; mouseY: number } | null>(null);
+  const dragStart = useRef<{
+    x: number;
+    y: number;
+    mouseX: number;
+    mouseY: number;
+    lastX: number;
+    lastY: number;
+    lastTime: number;
+  } | null>(null);
   const heroRef = useRef<HTMLDivElement>(null);
 
   // Função para manter o card dentro da área do Hero (efeito ricochete)
-  function bounceBackIfOutOfBounds(x: number, y: number) {
+  function bounceBackIfOutOfBounds(x: number, y: number, vx = 0, vy = 0) {
     const hero = heroRef.current;
-    if (!hero) return { x, y };
+    if (!hero) return { x, y, vx, vy };
 
     const heroRect = hero.getBoundingClientRect();
-    const cardWidth = 480;
+    const cardWidth = Math.min(480, heroRect.width * 0.95);
     const cardHeight = 340;
     const minX = -heroRect.width / 2 + cardWidth / 2 + 12;
     const maxX = heroRect.width / 2 - cardWidth / 2 - 12;
     const minY = -heroRect.height / 2 + cardHeight / 2 + 12;
     const maxY = heroRect.height / 2 - cardHeight / 2 - 12;
 
-    let nx = x, ny = y;
-    if (x < minX) nx = minX + (minX - x) * 0.4;
-    if (x > maxX) nx = maxX - (x - maxX) * 0.4;
-    if (y < minY) ny = minY + (minY - y) * 0.4;
-    if (y > maxY) ny = maxY - (y - maxY) * 0.4;
-    return { x: nx, y: ny };
+    let nx = x, ny = y, nvx = vx, nvy = vy;
+    if (x < minX) { nx = minX; nvx = -vx * 0.6; }
+    if (x > maxX) { nx = maxX; nvx = -vx * 0.6; }
+    if (y < minY) { ny = minY; nvy = -vy * 0.6; }
+    if (y > maxY) { ny = maxY; nvy = -vy * 0.6; }
+    return { x: nx, y: ny, vx: nvx, vy: nvy };
   }
 
-  // Mouse/touch events para movable layout
+  // Mouse/touch events para movable layout com "jogar"
   useEffect(() => {
     if (!dragging) return;
     const onMove = (clientX: number, clientY: number) => {
       if (!dragStart.current) return;
+      const now = Date.now();
+      const dt = Math.max(now - dragStart.current.lastTime, 1);
       const dx = clientX - dragStart.current.mouseX;
       const dy = clientY - dragStart.current.mouseY;
       // eslint-disable-next-line prefer-const
       let newX = dragStart.current.x + dx;
       // eslint-disable-next-line prefer-const
       let newY = dragStart.current.y + dy;
+      // Calcular velocidade instantânea
+      const vx = (clientX - dragStart.current.lastX) / dt;
+      const vy = (clientY - dragStart.current.lastY) / dt;
+      dragStart.current.lastX = clientX;
+      dragStart.current.lastY = clientY;
+      dragStart.current.lastTime = now;
+      setVelocity({ vx, vy });
       const { x: bx, y: by } = bounceBackIfOutOfBounds(newX, newY);
       setBoxPos({ x: bx, y: by });
     };
@@ -113,6 +131,46 @@ export default function Hero() {
     // eslint-disable-next-line
   }, [dragging]);
 
+  // Efeito de "jogar" (inércia) quando solta o card
+  useEffect(() => {
+    if (dragging) return;
+    let animationId: number;
+    let lastTime = performance.now();
+    function animate() {
+      let { x, y } = boxPos;
+      let { vx, vy } = velocity;
+      const now = performance.now();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const dt = Math.min((now - lastTime) / 16, 2); // ~60fps, dt máximo 2
+      lastTime = now;
+      // Fricção
+      vx *= 0.92;
+      vy *= 0.92;
+      // Atualiza posição
+      x += vx * 16;
+      y += vy * 16;
+      // Rebater nas bordas
+      const bounced = bounceBackIfOutOfBounds(x, y, vx, vy);
+      x = bounced.x;
+      y = bounced.y;
+      vx = bounced.vx;
+      vy = bounced.vy;
+      setBoxPos({ x, y });
+      setVelocity({ vx, vy });
+      // Parar se velocidade for muito baixa
+      if (Math.abs(vx) > 0.1 || Math.abs(vy) > 0.1) {
+        animationId = requestAnimationFrame(animate);
+      }
+    }
+    if ((Math.abs(velocity.vx) > 0.1 || Math.abs(velocity.vy) > 0.1)) {
+      animationId = requestAnimationFrame(animate);
+    }
+    return () => {
+      if (animationId) cancelAnimationFrame(animationId);
+    };
+    // eslint-disable-next-line
+  }, [dragging, velocity]);
+
   const onDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     setDragging(true);
     let clientX = 0, clientY = 0;
@@ -128,7 +186,11 @@ export default function Hero() {
       y: boxPos.y,
       mouseX: clientX,
       mouseY: clientY,
+      lastX: clientX,
+      lastY: clientY,
+      lastTime: Date.now(),
     };
+    setVelocity({ vx: 0, vy: 0 });
   };
 
   return (
@@ -156,27 +218,27 @@ export default function Hero() {
         {layouts[layoutIndex] === "stacked" && (
           <div className="w-full flex flex-col items-center">
             <div
-              className="z-20 mb-8 w-full flex justify-center"
+              className="z-20 mb-8 w-full flex justify-center px-2"
               style={{
-                fontSize: "2.6rem",
+                fontSize: "clamp(1.2rem, 5vw, 2.6rem)",
                 fontWeight: 800,
                 color: "#E9C46A",
                 letterSpacing: "-0.01em",
-                whiteSpace: "nowrap",
                 textAlign: "center",
                 textShadow: "0 2px 16px #E9C46A33",
                 lineHeight: 1.1,
+                wordBreak: "break-word",
+                whiteSpace: "normal",
               }}
             >
-              {typed}
+              <span className="break-words">{typed}</span>
               <span className="animate-blink ml-1" style={{ marginLeft: 4 }}>|</span>
             </div>
-            <div className="relative z-10 w-full max-w-xl mx-auto flex flex-col items-center px-6 py-14 bg-white/90 rounded-3xl shadow-xl border border-yellow-200">
+            <div className="relative z-10 w-full max-w-xl mx-auto flex flex-col items-center px-4 sm:px-6 py-10 sm:py-14 bg-white/90 rounded-3xl shadow-xl border border-yellow-200">
               <h1
-                className="font-extrabold tracking-tight mb-7"
+                className="font-extrabold tracking-tight mb-7 text-3xl sm:text-5xl"
                 style={{
                   color: "#264653",
-                  fontSize: "3.5rem",
                   fontWeight: 900,
                   textAlign: "center",
                   letterSpacing: "-0.04em",
@@ -187,10 +249,9 @@ export default function Hero() {
                 Organizo
               </h1>
               <p
-                className="text-lg font-medium mb-10"
+                className="text-base sm:text-lg font-medium mb-10"
                 style={{
                   color: "#264653DE",
-                  fontSize: "1.08rem",
                   textAlign: "center",
                   maxWidth: 420,
                   lineHeight: 1.6,
@@ -236,19 +297,17 @@ export default function Hero() {
 
         {/* Layout 2: Tela dividida metade branca metade fundo com frase */}
         {layouts[layoutIndex] === "sidebyside" && (
-          <div className="relative z-10 w-full flex min-h-[70vh]">
+          <div className="relative z-10 w-full flex flex-col md:flex-row min-h-[60vh]">
             {/* Lado esquerdo: caixa branca */}
-            <div className="flex-1 flex flex-col justify-center items-center bg-white/95 rounded-r-none rounded-l-3xl shadow-xl border border-yellow-200 px-10 py-16">
-              <h1 className="text-5xl font-extrabold tracking-tight mb-6" style={{
+            <div className="flex-1 flex flex-col justify-center items-center bg-white/95 rounded-b-3xl md:rounded-r-none md:rounded-l-3xl shadow-xl border border-yellow-200 px-4 sm:px-10 py-10 sm:py-16">
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-6" style={{
                 color: "#264653",
-                letterSpacing: "-0.04em",
-                fontSize: "3.2rem"
+                letterSpacing: "-0.04em"
               }}>
                 Organizo
               </h1>
-              <p className="text-lg max-w-xl mb-8 font-medium" style={{
+              <p className="text-base sm:text-lg max-w-xl mb-8 font-medium" style={{
                 color: "#264653DE",
-                fontSize: "1.08rem",
                 textAlign: "left",
                 maxWidth: 390,
                 lineHeight: 1.6
@@ -288,17 +347,18 @@ export default function Hero() {
               </div>
             </div>
             {/* Lado direito: fundo com frase animada centralizada */}
-            <div className="flex-1 flex items-center justify-center relative">
+            <div className="flex-1 flex items-center justify-center relative min-h-[120px]">
               <div
-                className="w-full h-full flex items-center justify-center"
+                className="w-full h-full flex items-center justify-center px-2"
                 style={{
                   background: "transparent",
                   minHeight: "100%",
                 }}
               >
                 <div
+                  className="break-words"
                   style={{
-                    fontSize: "2.6rem",
+                    fontSize: "clamp(1.1rem, 5vw, 2.6rem)",
                     fontWeight: 800,
                     color: "#E9C46A",
                     letterSpacing: "-0.01em",
@@ -307,6 +367,7 @@ export default function Hero() {
                     lineHeight: 1.1,
                     maxWidth: 420,
                     margin: "0 auto",
+                    wordBreak: "break-word",
                   }}
                 >
                   {typed}
@@ -319,15 +380,13 @@ export default function Hero() {
 
         {/* Layout 3: Inovador - Linha do tempo curva com cards flutuantes */}
         {layouts[layoutIndex] === "together" && (
-          <div className="relative z-10 w-full flex flex-col items-center justify-center min-h-[70vh] py-10">
+          <div className="relative z-10 w-full flex flex-col items-center justify-center min-h-[60vh] py-6 sm:py-10">
             {/* SVG curva */}
             <svg
-              className="absolute left-1/2 top-0 -translate-x-1/2 z-0"
-              width="90%"
-              height="420"
+              className="absolute left-1/2 top-0 -translate-x-1/2 z-0 w-full max-w-[900px] h-[220px] sm:h-[420px]"
               viewBox="0 0 900 420"
               fill="none"
-              style={{ maxWidth: 900, minWidth: 320, pointerEvents: "none" }}
+              style={{ pointerEvents: "none" }}
             >
               <path
                 d="M60 400 Q 200 100 450 210 Q 700 320 840 60"
@@ -340,21 +399,21 @@ export default function Hero() {
               />
             </svg>
             {/* Cards flutuantes ao longo da curva */}
-            <div className="absolute left-1/2 top-0 -translate-x-1/2 w-full max-w-[900px] h-[420px] pointer-events-none">
+            <div className="absolute left-1/2 top-0 -translate-x-1/2 w-full max-w-[900px] h-[220px] sm:h-[420px] pointer-events-none">
               {/* Card 1 */}
               <div
                 className="absolute"
                 style={{
-                  left: "4%",
-                  top: "320px",
+                  left: "8%",
+                  top: "160px",
                   transform: "translate(-50%, -50%)",
                   pointerEvents: "auto"
                 }}
               >
-                <div className="bg-white/95 border border-yellow-100 rounded-2xl shadow-lg px-7 py-6 min-w-[220px] max-w-[260px]">
-                  <div className="text-[#E9C46A] font-bold text-lg mb-1">Organize</div>
-                  <div className="text-[#264653] font-semibold text-base mb-2">Tarefas e Inspirações</div>
-                  <div className="text-[#264653bb] text-sm">Tudo em um só lugar, com clareza e leveza.</div>
+                <div className="bg-white/95 border border-yellow-100 rounded-2xl shadow-lg px-4 sm:px-7 py-4 sm:py-6 min-w-[140px] sm:min-w-[220px] max-w-[90vw] sm:max-w-[260px]">
+                  <div className="text-[#E9C46A] font-bold text-base sm:text-lg mb-1">Organize</div>
+                  <div className="text-[#264653] font-semibold text-sm sm:text-base mb-2">Tarefas e Inspirações</div>
+                  <div className="text-[#264653bb] text-xs sm:text-sm">Tudo em um só lugar, com clareza e leveza.</div>
                 </div>
               </div>
               {/* Card 2 */}
@@ -362,15 +421,15 @@ export default function Hero() {
                 className="absolute"
                 style={{
                   left: "36%",
-                  top: "120px",
+                  top: "60px",
                   transform: "translate(-50%, -50%)",
                   pointerEvents: "auto"
                 }}
               >
-                <div className="bg-white/95 border border-yellow-100 rounded-2xl shadow-lg px-7 py-6 min-w-[220px] max-w-[260px]">
-                  <div className="text-[#E9C46A] font-bold text-lg mb-1">Visualize</div>
-                  <div className="text-[#264653] font-semibold text-base mb-2">Seu progresso</div>
-                  <div className="text-[#264653bb] text-sm">Acompanhe sua evolução de forma visual.</div>
+                <div className="bg-white/95 border border-yellow-100 rounded-2xl shadow-lg px-4 sm:px-7 py-4 sm:py-6 min-w-[140px] sm:min-w-[220px] max-w-[90vw] sm:max-w-[260px]">
+                  <div className="text-[#E9C46A] font-bold text-base sm:text-lg mb-1">Visualize</div>
+                  <div className="text-[#264653] font-semibold text-sm sm:text-base mb-2">Seu progresso</div>
+                  <div className="text-[#264653bb] text-xs sm:text-sm">Acompanhe sua evolução de forma visual.</div>
                 </div>
               </div>
               {/* Card 3 */}
@@ -378,15 +437,15 @@ export default function Hero() {
                 className="absolute"
                 style={{
                   left: "68%",
-                  top: "260px",
+                  top: "130px",
                   transform: "translate(-50%, -50%)",
                   pointerEvents: "auto"
                 }}
               >
-                <div className="bg-white/95 border border-yellow-100 rounded-2xl shadow-lg px-7 py-6 min-w-[220px] max-w-[260px]">
-                  <div className="text-[#E9C46A] font-bold text-lg mb-1">Personalize</div>
-                  <div className="text-[#264653] font-semibold text-base mb-2">Seu jeito</div>
-                  <div className="text-[#264653bb] text-sm">Adapte o Organizo ao seu estilo de vida.</div>
+                <div className="bg-white/95 border border-yellow-100 rounded-2xl shadow-lg px-4 sm:px-7 py-4 sm:py-6 min-w-[140px] sm:min-w-[220px] max-w-[90vw] sm:max-w-[260px]">
+                  <div className="text-[#E9C46A] font-bold text-base sm:text-lg mb-1">Personalize</div>
+                  <div className="text-[#264653] font-semibold text-sm sm:text-base mb-2">Seu jeito</div>
+                  <div className="text-[#264653bb] text-xs sm:text-sm">Adapte o Organizo ao seu estilo de vida.</div>
                 </div>
               </div>
               {/* Card 4 */}
@@ -394,23 +453,24 @@ export default function Hero() {
                 className="absolute"
                 style={{
                   left: "92%",
-                  top: "70px",
+                  top: "30px",
                   transform: "translate(-50%, -50%)",
                   pointerEvents: "auto"
                 }}
               >
-                <div className="bg-white/95 border border-yellow-100 rounded-2xl shadow-lg px-7 py-6 min-w-[220px] max-w-[260px]">
-                  <div className="text-[#E9C46A] font-bold text-lg mb-1">Viva melhor</div>
-                  <div className="text-[#264653] font-semibold text-base mb-2">Com equilíbrio</div>
-                  <div className="text-[#264653bb] text-sm">Planeje, realize e aproveite cada momento.</div>
+                <div className="bg-white/95 border border-yellow-100 rounded-2xl shadow-lg px-4 sm:px-7 py-4 sm:py-6 min-w-[140px] sm:min-w-[220px] max-w-[90vw] sm:max-w-[260px]">
+                  <div className="text-[#E9C46A] font-bold text-base sm:text-lg mb-1">Viva melhor</div>
+                  <div className="text-[#264653] font-semibold text-sm sm:text-base mb-2">Com equilíbrio</div>
+                  <div className="text-[#264653bb] text-xs sm:text-sm">Planeje, realize e aproveite cada momento.</div>
                 </div>
               </div>
             </div>
             {/* Frase animada centralizada - mais embaixo */}
-            <div className="relative z-10 flex flex-col items-center mt-[340px]">
+            <div className="relative z-10 flex flex-col items-center mt-[180px] sm:mt-[340px] px-2">
               <div
+                className="break-words"
                 style={{
-                  fontSize: "2.1rem",
+                  fontSize: "clamp(1.1rem, 4vw, 2.1rem)",
                   fontWeight: 800,
                   color: "#E9C46A",
                   letterSpacing: "-0.01em",
@@ -445,11 +505,11 @@ export default function Hero() {
 
         {/* Layout 4: Movable */}
         {layouts[layoutIndex] === "movable" && (
-          <div style={{ width: "100%", height: "70vh", position: "relative" }}>
+          <div className="w-full h-[60vh] sm:h-[70vh] relative">
             <div
-              className="z-20 mb-8 w-full flex justify-center"
+              className="z-20 mb-8 w-full flex justify-center px-2"
               style={{
-                fontSize: "2.2rem",
+                fontSize: "clamp(1.1rem, 4vw, 2.2rem)",
                 fontWeight: 800,
                 color: "#E9C46A",
                 letterSpacing: "-0.01em",
@@ -457,34 +517,35 @@ export default function Hero() {
                 textShadow: "0 2px 16px #E9C46A33",
                 lineHeight: 1.1,
                 marginTop: 24,
+                wordBreak: "break-word",
               }}
             >
-              {typed}
+              <span className="break-words">{typed}</span>
               <span className="animate-blink ml-1" style={{ marginLeft: 4 }}>|</span>
             </div>
             <div
               className="absolute"
               style={{
-                left: `calc(50% + ${boxPos.x}px - 240px)`,
+                left: `calc(50% + ${boxPos.x}px - min(240px, 45vw))`,
                 top: `calc(40% + ${boxPos.y}px - 120px)`,
                 cursor: dragging ? "grabbing" : "grab",
                 zIndex: 30,
-                width: 480,
+                width: "min(480px, 90vw)",
                 maxWidth: "90vw",
                 transition: dragging ? "none" : "box-shadow 0.2s",
                 boxShadow: dragging
                   ? "0 8px 32px 0 #E9C46A44"
                   : "0 2px 12px 0 #E9C46A55",
+                userSelect: "none",
               }}
               onMouseDown={onDragStart}
               onTouchStart={onDragStart}
             >
-              <div className="w-full flex flex-col items-center px-6 py-14 bg-white/95 rounded-3xl border border-yellow-200 select-none">
+              <div className="w-full flex flex-col items-center px-4 sm:px-6 py-10 sm:py-14 bg-white/95 rounded-3xl border border-yellow-200 select-none">
                 <h1
-                  className="font-extrabold tracking-tight mb-7"
+                  className="font-extrabold tracking-tight mb-7 text-3xl sm:text-5xl"
                   style={{
                     color: "#264653",
-                    fontSize: "3.5rem",
                     fontWeight: 900,
                     textAlign: "center",
                     letterSpacing: "-0.04em",
@@ -495,10 +556,9 @@ export default function Hero() {
                   Organizo
                 </h1>
                 <p
-                  className="text-lg font-medium mb-10"
+                  className="text-base sm:text-lg font-medium mb-10"
                   style={{
                     color: "#264653DE",
-                    fontSize: "1.08rem",
                     textAlign: "center",
                     maxWidth: 420,
                     lineHeight: 1.6,
@@ -548,8 +608,8 @@ export default function Hero() {
       <div
         style={{
           position: "absolute",
-          bottom: 32,
-          right: 32,
+          bottom: 24,
+          right: 16,
           zIndex: 50,
         }}
         className="flex"
