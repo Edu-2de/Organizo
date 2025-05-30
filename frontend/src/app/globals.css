@@ -3,25 +3,261 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Paleta de cores customizada usando variáveis */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-petrol: #264653;
+  --color-olive: #A9C5A0;
+  --color-gold: #E9C46A;
+  --color-beige: #F6F5F2;
+  --color-graphite: #22223B;
+  --color-deep-purple: #523A68;
+  --color-blue: #2a9df4;
+  --color-dark-blue: #10121A;
+  --color-dark-bg: #23283B;
+  --color-dark-card: #181B2A;
+  --color-dark-olive: #5D8F75;
+  --color-dark-purple: #2D3350;
+  --color-cyan: #6EC1E4;
+  --color-night-gold: #FFD87B;
+  --color-night-gold-2: #F6C177;
+  --color-night-link: #AEE2FF;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+body.dark-mode {
+  --color-petrol: #6EC1E4;
+  --color-olive: #5D8F75;
+  --color-gold: #F6C177;
+  --color-beige: #23283B;
+  --color-graphite: #10121A;
+  --color-deep-purple: #2D3350;
+  --color-blue: #2a9df4;
+  --color-dark-blue: #10121A;
+  --color-dark-bg: #23283B;
+  --color-dark-card: #181B2A;
+  --color-dark-olive: #5D8F75;
+  --color-dark-purple: #2D3350;
+  --color-cyan: #6EC1E4;
+  --color-night-gold: #FFD87B;
+  --color-night-gold-2: #F6C177;
+  --color-night-link: #AEE2FF;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Transição suave para todos os elementos principais */
+body,
+header,
+.dark-header,
+body.dark-mode .dark-header,
+body.dark-mode .bg-white,
+body.dark-mode .bg-white\/90,
+body.dark-mode .bg-white\/80 {
+  transition: background 0.4s, color 0.4s, box-shadow 0.4s;
 }
 
-body {
+/* Modo escuro geral */
+body.dark-mode {
+  background: var(--color-dark-bg) !important;
+  color: var(--color-cyan) !important;
+}
 
+/* Header escuro: azul noite profundo */
+body.dark-mode .dark-header {
+  background: var(--color-dark-blue) !important;
+  border-bottom: 1px solid var(--color-dark-olive) !important;
+  box-shadow: 0 2px 16px 0 rgba(0,0,0,0.28) !important;
+}
+
+/* Texto do header claro */
+body.dark-mode .dark-header,
+body.dark-mode .dark-header * {
+  color: var(--color-cyan) !important;
+}
+
+/* Logo "O" azul claro mantém destaque no modo escuro */
+body.dark-mode .dark-header span[style*="color: #2a9df4"] {
+  color: var(--color-blue) !important;
+}
+/* Logo "O" dourado no modo claro */
+body:not(.dark-mode) .dark-header span[style*="color: #E9C46A"] {
+  color: #E9C46A !important;
+}
+
+/* Navegação e menus escuros */
+body.dark-mode .bg-white,
+body.dark-mode .bg-white\/90,
+body.dark-mode .bg-white\/80 {
+  background: var(--color-dark-bg) !important;
+  color: var(--color-cyan) !important;
+}
+
+/* Botões principais no modo escuro - use uma classe customizada nos botões, ex: main-btn */
+body.dark-mode .main-btn {
+  background: var(--color-blue) !important;
+  color: var(--color-dark-blue) !important;
+  border: none !important;
+  box-shadow: 0 2px 8px 0 rgba(42,157,244,0.15) !important;
+}
+
+body.dark-mode .main-btn:hover {
+  background: #2490db !important;
+  color: #fff !important;
+}
+
+/* Sombra dos cards e menus */
+body.dark-mode .shadow,
+body.dark-mode .shadow-md,
+body.dark-mode .shadow-lg {
+  box-shadow: 0 2px 16px 0 rgba(0,0,0,0.25) !important;
+}
+
+/* Links de navegação */
+body.dark-mode a {
+  color: var(--color-night-link) !important;
+}
+
+/* Classe utilitária opcional para textos claros */
+body.dark-mode .dark-text {
+  color: var(--color-cyan) !important;
+}
+
+/* HERO - dark mode aprimorado, visual noite sofisticado */
+body.dark-mode .hero-bg {
+  /* Gradiente azul profundo com toque azul claro */
+  background: linear-gradient(135deg, var(--color-dark-blue) 0%, var(--color-dark-bg) 60%, var(--color-blue) 100%) !important;
+}
+
+/* Blobs com tons frios e translúcidos */
+body.dark-mode .hero-softshape-1 {
+  background: #2a9df488 !important; /* Azul claro translúcido */
+}
+body.dark-mode .hero-softshape-2 {
+  background: #23283Bcc !important; /* Fundo escuro translúcido */
+}
+body.dark-mode .hero-softshape-3 {
+  background: #5D8F75bb !important; /* Verde-oliva escuro translúcido */
+}
+body.dark-mode .hero-softshape-4 {
+  background: #2D3350cc !important; /* Roxo profundo translúcido */
+}
+
+/* Cards escuros com borda azul e sombra azulada */
+body.dark-mode .hero-card {
+  background: linear-gradient(120deg, #181B2Aee 80%, #23283Bcc 100%) !important;
+  border-color: var(--color-blue) !important;
+  color: #e9e9f3 !important;
+  box-shadow: 0 4px 32px 0 #10121A88, 0 0px 0px 1.5px var(--color-blue)11 !important;
+}
+
+/* Títulos dourados mais suaves e com brilho */
+body.dark-mode .hero-gold {
+  color: var(--color-night-gold-2) !important;
+  text-shadow: 0 2px 16px var(--color-night-gold-2)55, 0 0 8px #2a9df433 !important;
+}
+
+/* Textos principais azulados */
+body.dark-mode .hero-petrol {
+  color: var(--color-cyan) !important;
+}
+
+/* Botão principal azul claro com texto escuro */
+body.dark-mode .hero-btn {
+  background: var(--color-blue) !important;
+  color: var(--color-dark-blue) !important;
+  box-shadow: 0 2px 12px 0 var(--color-blue)55 !important;
+  border: none !important;
+}
+
+/* Botão secundário com borda dourada e fundo translúcido */
+body.dark-mode .hero-border-gold {
+  border-color: var(--color-night-gold-2) !important;
+  color: var(--color-night-gold-2) !important;
+  background: #23283B88 !important;
+}
+
+/* Ajuste para links dentro dos cards */
+body.dark-mode .hero-card a {
+  color: var(--color-night-link) !important;
+  text-decoration: underline;
+}
+
+/* Ajuste para animação do cursor no dark */
+body.dark-mode .animate-blink {
+  border-right: 2px solid var(--color-night-gold-2) !important;
+}
+
+/* Pequeno brilho nos cards ao focar/hover */
+body.dark-mode .hero-card:focus-within,
+body.dark-mode .hero-card:hover {
+  box-shadow: 0 8px 32px 0 #2a9df488, 0 0px 0px 2px var(--color-blue) !important;
+  border-color: var(--color-blue) !important;
+}
+
+/* Para garantir contraste em textos dentro dos cards */
+body.dark-mode .hero-card h1,
+body.dark-mode .hero-card p,
+body.dark-mode .hero-card span,
+body.dark-mode .hero-card div {
+  color: #e9e9f3 !important;
+}
+
+/* Remove duplicatas antigas e sobrescritas */
+body.dark-mode .hero-bg,
+body.dark-mode .hero-softshape-1,
+body.dark-mode .hero-softshape-2,
+body.dark-mode .hero-softshape-3,
+body.dark-mode .hero-softshape-4,
+body.dark-mode .hero-card,
+body.dark-mode .hero-gold,
+body.dark-mode .hero-petrol,
+body.dark-mode .hero-btn,
+body.dark-mode .hero-border-gold {
+  /* já sobrescrito acima */
+}
+
+
+body.dark-mode {
+  background: linear-gradient(135deg, #101a2f 0%, #181B2A 100%) !important;
+  color: var(--color-cyan) !important;
+}
+
+body.dark-mode .main-bg {
+  background: #101a2f !important;
+}
+
+.logo-o {
+  color: #E9C46A;
+  transition: color 0.3s;
+}
+body.dark-mode .logo-o {
+  color: #269df4;
+}
+
+.logo-o {
+  color: #E9C46A;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  transition: color 0.3s;
+}
+.logo-text-light {
+  color: #264653;
+  font-weight: 700;
+  transition: color 0.3s;
+}
+.logo-text-dark {
+  color: #fff;
+  font-weight: 700;
+  transition: color 0.3s;
+}
+body.dark-mode .logo-o {
+  color: #2a9df4 !important;
+}
+body.dark-mode .logo-text-dark {
+  color: #fff !important;
+}
+.nav-item-light {
+  color: #264653e6;
+  transition: color 0.2s;
+}
+.nav-item-dark {
+  color: #fff;
+  transition: color 0.2s;
 }

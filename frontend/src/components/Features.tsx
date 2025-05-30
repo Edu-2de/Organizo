@@ -11,61 +11,66 @@ import {
   ClockIcon,
 } from "@heroicons/react/24/outline";
 
-type FeatureCardProps = {
+// Tipo só para os dados do array
+type FeatureData = {
   Icon: ElementType;
-  accent: string;
+  accent: "gold" | "petrol";
   title: string;
   description: string;
+};
+
+// Props completas do card
+type FeatureCardProps = FeatureData & {
   index: number;
   shuffle: boolean;
 };
 
-const allFeatures = [
+const allFeatures: FeatureData[] = [
   {
     Icon: BoltIcon,
-    accent: "text-[#E9C46A]",
+    accent: "gold",
     title: "Rápido e Moderno",
     description:
       "Interface instantânea, fluida e elegante. Foco total no essencial, sem distrações.",
   },
   {
     Icon: DevicePhoneMobileIcon,
-    accent: "text-[#264653]",
+    accent: "petrol",
     title: "100% Responsivo",
     description:
       "Use em qualquer tela: notebook, tablet ou celular. Sempre bonito e funcional.",
   },
   {
     Icon: Cog6ToothIcon,
-    accent: "text-[#264653]",
+    accent: "petrol",
     title: "Personalizável",
     description:
       "Mude temas, cores e organização em segundos. O Organizo se adapta ao seu fluxo.",
   },
   {
     Icon: ShieldCheckIcon,
-    accent: "text-[#264653]",
+    accent: "petrol",
     title: "Seguro e Privado",
     description:
       "Seus dados protegidos com criptografia e privacidade total.",
   },
   {
     Icon: ClockIcon,
-    accent: "text-[#E9C46A]",
+    accent: "gold",
     title: "Produtividade Real",
     description:
       "Ferramentas para você focar no que importa e ganhar tempo de verdade.",
   },
   {
     Icon: SparklesIcon,
-    accent: "text-[#E9C46A]",
+    accent: "gold",
     title: "Design Inspirador",
     description:
       "Visual minimalista, leve e agradável para motivar sua rotina.",
   },
   {
     Icon: AdjustmentsHorizontalIcon,
-    accent: "text-[#264653]",
+    accent: "petrol",
     title: "Totalmente Ajustável",
     description:
       "Adapte listas, categorias e temas ao seu jeito de organizar.",
@@ -73,7 +78,6 @@ const allFeatures = [
 ];
 
 function shuffle<T>(arr: T[]): T[] {
-  // Fisher-Yates shuffle
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -82,10 +86,10 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-function FeatureCard({ Icon, accent, title, description, index, shuffle: isShuffling }: FeatureCardProps) {
+function FeatureCard(props: FeatureCardProps) {
+  const { Icon, accent, title, description, index, shuffle: isShuffling } = props;
   const ref = useRef<HTMLDivElement>(null);
 
-  // Fade-in ao aparecer no scroll
   useEffect(() => {
     const card = ref.current;
     if (!card) return;
@@ -105,21 +109,19 @@ function FeatureCard({ Icon, accent, title, description, index, shuffle: isShuff
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Efeito de highlight ao clicar
   useEffect(() => {
     const card = ref.current;
     if (!card) return;
     const onClick = () => {
-      card.classList.add("ring-4", "ring-[#E9C46A]/40");
+      card.classList.add("ring-4", "ring-[var(--color-gold)]/40");
       setTimeout(() => {
-        card.classList.remove("ring-4", "ring-[#E9C46A]/40");
+        card.classList.remove("ring-4", "ring-[var(--color-gold)]/40");
       }, 250);
     };
     card.addEventListener("mousedown", onClick);
     return () => card.removeEventListener("mousedown", onClick);
   }, []);
 
-  // Animação de shuffle (embaralhar)
   useEffect(() => {
     const card = ref.current;
     if (!card) return;
@@ -131,12 +133,16 @@ function FeatureCard({ Icon, accent, title, description, index, shuffle: isShuff
     }
   }, [isShuffling]);
 
+  const accentColor = accent === "gold" ? "var(--color-gold)" : "var(--color-petrol)";
+  const textColor = "var(--color-petrol)";
+  const bgColor = "var(--color-beige)";
+
   return (
     <div
       ref={ref}
       tabIndex={0}
       className={`
-        group bg-white border border-[#f6f5f2] rounded-3xl shadow-xl
+        group border rounded-3xl shadow-xl
         px-12 py-14 flex flex-col items-center text-center
         transition-all duration-700 ease-[cubic-bezier(.23,1.04,.44,.98)]
         cursor-pointer outline-none
@@ -152,8 +158,9 @@ function FeatureCard({ Icon, accent, title, description, index, shuffle: isShuff
         width: "100%",
         margin: "0 auto",
         transitionDelay: `${index * 120}ms`,
-        background: "#fff",
-        boxShadow: "0 4px 32px 0 #E9C46A13",
+        background: bgColor,
+        borderColor: "var(--color-beige)",
+        boxShadow: "0 4px 32px 0 var(--color-gold)13",
       }}
     >
       <div
@@ -161,17 +168,20 @@ function FeatureCard({ Icon, accent, title, description, index, shuffle: isShuff
           mb-6 rounded-2xl p-5 flex items-center justify-center
           transition-all duration-300 group-hover:scale-110 group-focus:scale-110
           shadow
-          ${accent}
         `}
         style={{
-          background: "#F6F5F2",
-          boxShadow: "0 4px 16px 0 #E9C46A22",
+          background: bgColor,
+          boxShadow: "0 4px 16px 0 rgba(38,70,83,0.13)",
         }}
       >
-        <Icon className="h-10 w-10" />
+        <Icon className="h-10 w-10" style={{ color: accentColor }} />
       </div>
-      <h3 className="text-xl font-extrabold mb-2 text-[#264653] tracking-tight">{title}</h3>
-      <p className="text-[#264653bb] font-medium leading-relaxed text-base">{description}</p>
+      <h3 className="text-xl font-extrabold mb-2 tracking-tight" style={{ color: textColor }}>
+        {title}
+      </h3>
+      <p className="font-medium leading-relaxed text-base" style={{ color: "var(--color-petrol)", opacity: 0.73 }}>
+        {description}
+      </p>
       <style jsx>{`
         .shuffle-anim {
           animation: shuffleCard 0.5s cubic-bezier(.4,2,.6,.9);
@@ -206,28 +216,44 @@ export default function Features() {
   }
 
   return (
-    <section className="relative py-24 bg-[#F6F5F2] overflow-hidden">
+    <section
+      className="relative py-24 overflow-hidden"
+      style={{ background: "var(--color-beige)" }}
+    >
       <div className="max-w-6xl mx-auto px-4 relative z-10">
         {/* Título animado e criativo */}
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center justify-center gap-4 mb-3">
-            <h2 className="text-4xl md:text-5xl font-black text-center text-[#264653] tracking-tight drop-shadow-sm leading-tight">
-              O que faz o <span className="text-[#E9C46A]">Organizo</span> ser único?
+            <h2
+              className="text-4xl md:text-5xl font-black text-center tracking-tight drop-shadow-sm leading-tight"
+              style={{ color: "var(--color-petrol)" }}
+            >
+              O que faz o <span style={{ color: "var(--color-gold)" }}>Organizo</span> ser único?
             </h2>
             <button
               aria-label="Embaralhar recursos"
               onClick={handleRefresh}
               disabled={refreshing}
               className={`
-                p-5 rounded-full border-2 border-[#E9C46A]/40 bg-white/90 shadow-lg transition
+                p-5 rounded-full border-2 shadow-lg transition
                 hover:bg-[#fff9e7] hover:scale-110 active:scale-95
-                focus:outline-none focus:ring-2 focus:ring-[#E9C46A]/40
+                focus:outline-none
                 ${refreshing ? "opacity-60 pointer-events-none" : ""}
               `}
-              style={{ transition: "all 0.2s" }}
+              style={{
+                borderColor: "var(--color-gold)",
+                background: "var(--color-beige)",
+                boxShadow: "0 2px 8px 0 var(--color-gold)22",
+                transition: "all 0.2s",
+              }}
             >
               <ArrowPathIcon
-                className={`h-8 w-8 text-[#E9C46A] ${refreshing ? "animate-spin" : ""}`}
+                className={`h-8 w-8`}
+                style={{
+                  color: "var(--color-gold)",
+                  transition: "color 0.2s",
+                  animation: refreshing ? "spin 1s linear infinite" : undefined,
+                }}
               />
             </button>
           </div>
@@ -235,18 +261,43 @@ export default function Features() {
         {/* Mini texto animado */}
         <div className="flex justify-center mb-16">
           <div className="relative max-w-2xl text-center">
-            <p className="text-lg text-[#264653b2] font-medium leading-relaxed transition-all duration-500 hover:scale-[1.03] hover:text-[#264653]">
-              Mais do que um organizador: <span className="font-bold text-[#E9C46A]">experimente produtividade com leveza</span>.<br />
+            <p
+              className="text-lg font-medium leading-relaxed transition-all duration-500 hover:scale-[1.03]"
+              style={{
+                color: "var(--color-petrol)",
+                opacity: 0.7,
+              }}
+            >
+              Mais do que um organizador:{" "}
+              <span className="font-bold" style={{ color: "var(--color-gold)", opacity: 1 }}>
+                experimente produtividade com leveza
+              </span>
+              .<br />
               Simples, elegante e feito para inspirar você todos os dias.
             </p>
           </div>
         </div>
         <div className="grid gap-10 md:gap-14 grid-cols-1 md:grid-cols-3 items-stretch">
           {features.map((f, i) => (
-            <FeatureCard key={f.title} {...f} index={i} shuffle={shuffleAnim} />
+            <FeatureCard
+              key={f.title}
+              Icon={f.Icon}
+              accent={f.accent}
+              title={f.title}
+              description={f.description}
+              index={i}
+              shuffle={shuffleAnim}
+            />
           ))}
         </div>
       </div>
+      <style jsx global>{`
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </section>
   );
 }

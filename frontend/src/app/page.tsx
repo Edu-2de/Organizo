@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import MiniDashboard from "@/components/MiniDashboard";
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50 main-bg">
       <Header />
       <main className="flex-1">
         <Hero />

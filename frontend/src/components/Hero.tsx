@@ -5,10 +5,22 @@ import { useTypewriterLoop } from "../hooks/useTypewriter";
 function SoftShapes() {
   return (
     <>
-      <div className="absolute -top-48 -left-52 animate-blob1 w-[44rem] h-[33rem] rounded-full blur-3xl pointer-events-none z-0" style={{ background: "#E9C46A55" }} />
-      <div className="absolute top-40 right-0 animate-blob2 w-[32rem] h-[26rem] rounded-full blur-2xl pointer-events-none z-0" style={{ background: "#F6F5F299" }} />
-      <div className="absolute bottom-0 left-0 animate-blob3 w-[24rem] h-[17rem] rounded-full blur-2xl pointer-events-none z-0" style={{ background: "#A9C5A099" }} />
-      <div className="absolute bottom-0 right-0 animate-blob4 w-[20rem] h-[12rem] rounded-full blur-2xl pointer-events-none z-0" style={{ background: "#523A6826" }} />
+      <div
+        className="hero-softshape-1 absolute -top-48 -left-52 animate-blob1 w-[44rem] h-[33rem] rounded-full blur-3xl pointer-events-none z-0"
+        style={{ background: "#E9C46A55" }}
+      />
+      <div
+        className="hero-softshape-2 absolute top-40 right-0 animate-blob2 w-[32rem] h-[26rem] rounded-full blur-2xl pointer-events-none z-0"
+        style={{ background: "#F6F5F299" }}
+      />
+      <div
+        className="hero-softshape-3 absolute bottom-0 left-0 animate-blob3 w-[24rem] h-[17rem] rounded-full blur-2xl pointer-events-none z-0"
+        style={{ background: "#A9C5A099" }}
+      />
+      <div
+        className="hero-softshape-4 absolute bottom-0 right-0 animate-blob4 w-[20rem] h-[12rem] rounded-full blur-2xl pointer-events-none z-0"
+        style={{ background: "#523A6826" }}
+      />
       <style jsx>{`
         .animate-blob1 { animation: blobMove1 11s ease-in-out infinite alternate; }
         .animate-blob2 { animation: blobMove2 13s ease-in-out infinite alternate; }
@@ -128,7 +140,7 @@ export default function Hero() {
       window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("touchend", onEnd);
     };
-    // eslint-disable-next-line
+   
   }, [dragging]);
 
   // Efeito de "jogar" (inércia) quando solta o card
@@ -143,13 +155,10 @@ export default function Hero() {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const dt = Math.min((now - lastTime) / 16, 2); // ~60fps, dt máximo 2
       lastTime = now;
-      // Fricção
       vx *= 0.92;
       vy *= 0.92;
-      // Atualiza posição
       x += vx * 16;
       y += vy * 16;
-      // Rebater nas bordas
       const bounced = bounceBackIfOutOfBounds(x, y, vx, vy);
       x = bounced.x;
       y = bounced.y;
@@ -157,7 +166,6 @@ export default function Hero() {
       vy = bounced.vy;
       setBoxPos({ x, y });
       setVelocity({ vx, vy });
-      // Parar se velocidade for muito baixa
       if (Math.abs(vx) > 0.1 || Math.abs(vy) > 0.1) {
         animationId = requestAnimationFrame(animate);
       }
@@ -196,7 +204,7 @@ export default function Hero() {
   return (
     <section
       ref={heroRef}
-      className="relative isolate overflow-hidden flex flex-col items-center justify-center min-h-[90vh]"
+      className="hero-bg relative isolate overflow-hidden flex flex-col items-center justify-center min-h-[90vh]"
       style={{
         background: "linear-gradient(135deg, #F6F5F2 0%, #E9C46A66 55%, #A9C5A099 100%)",
         userSelect: dragging ? "none" : "auto"
@@ -218,7 +226,7 @@ export default function Hero() {
         {layouts[layoutIndex] === "stacked" && (
           <div className="w-full flex flex-col items-center">
             <div
-              className="z-20 mb-8 w-full flex justify-center px-2"
+              className="hero-gold z-20 mb-8 w-full flex justify-center px-2"
               style={{
                 fontSize: "clamp(1.2rem, 5vw, 2.6rem)",
                 fontWeight: 800,
@@ -234,9 +242,9 @@ export default function Hero() {
               <span className="break-words">{typed}</span>
               <span className="animate-blink ml-1" style={{ marginLeft: 4 }}>|</span>
             </div>
-            <div className="relative z-10 w-full max-w-xl mx-auto flex flex-col items-center px-4 sm:px-6 py-10 sm:py-14 bg-white/90 rounded-3xl shadow-xl border border-yellow-200">
+            <div className="hero-card relative z-10 w-full max-w-xl mx-auto flex flex-col items-center px-4 sm:px-6 py-10 sm:py-14 bg-white/90 rounded-3xl shadow-xl border border-yellow-200">
               <h1
-                className="font-extrabold tracking-tight mb-7 text-3xl sm:text-5xl"
+                className="hero-petrol font-extrabold tracking-tight mb-7 text-3xl sm:text-5xl"
                 style={{
                   color: "#264653",
                   fontWeight: 900,
@@ -249,7 +257,7 @@ export default function Hero() {
                 Organizo
               </h1>
               <p
-                className="text-base sm:text-lg font-medium mb-10"
+                className="hero-petrol text-base sm:text-lg font-medium mb-10"
                 style={{
                   color: "#264653DE",
                   textAlign: "center",
@@ -263,7 +271,7 @@ export default function Hero() {
               </p>
               <div className="flex gap-4 flex-col sm:flex-row items-center w-full justify-center">
                 <button
-                  className="rounded-full px-8 py-3 text-lg font-bold shadow-xl transition-all duration-200"
+                  className="hero-btn rounded-full px-8 py-3 text-lg font-bold shadow-xl transition-all duration-200"
                   style={{
                     background: "#E9C46A",
                     color: "#264653",
@@ -278,7 +286,7 @@ export default function Hero() {
                 </button>
                 <a
                   href="#features"
-                  className="inline-block rounded-full border-2 px-8 py-3 text-base font-semibold"
+                  className="hero-border-gold inline-block rounded-full border-2 px-8 py-3 text-base font-semibold"
                   style={{
                     borderColor: "#E9C46A",
                     color: "#E9C46A",
@@ -299,14 +307,14 @@ export default function Hero() {
         {layouts[layoutIndex] === "sidebyside" && (
           <div className="relative z-10 w-full flex flex-col md:flex-row min-h-[60vh]">
             {/* Lado esquerdo: caixa branca */}
-            <div className="flex-1 flex flex-col justify-center items-center bg-white/95 rounded-b-3xl md:rounded-r-none md:rounded-l-3xl shadow-xl border border-yellow-200 px-4 sm:px-10 py-10 sm:py-16">
-              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-6" style={{
+            <div className="hero-card flex-1 flex flex-col justify-center items-center bg-white/95 rounded-b-3xl md:rounded-r-none md:rounded-l-3xl shadow-xl border border-yellow-200 px-4 sm:px-10 py-10 sm:py-16">
+              <h1 className="hero-petrol text-3xl sm:text-5xl font-extrabold tracking-tight mb-6" style={{
                 color: "#264653",
                 letterSpacing: "-0.04em"
               }}>
                 Organizo
               </h1>
-              <p className="text-base sm:text-lg max-w-xl mb-8 font-medium" style={{
+              <p className="hero-petrol text-base sm:text-lg max-w-xl mb-8 font-medium" style={{
                 color: "#264653DE",
                 textAlign: "left",
                 maxWidth: 390,
@@ -317,7 +325,7 @@ export default function Hero() {
               </p>
               <div className="flex gap-4 flex-col sm:flex-row items-start">
                 <button
-                  className="rounded-full px-8 py-3 text-lg font-bold shadow-xl transition-all duration-200"
+                  className="hero-btn rounded-full px-8 py-3 text-lg font-bold shadow-xl transition-all duration-200"
                   style={{
                     background: "#E9C46A",
                     color: "#264653",
@@ -332,7 +340,7 @@ export default function Hero() {
                 </button>
                 <a
                   href="#features"
-                  className="inline-block rounded-full border-2 px-8 py-3 text-base font-semibold"
+                  className="hero-border-gold inline-block rounded-full border-2 px-8 py-3 text-base font-semibold"
                   style={{
                     borderColor: "#E9C46A",
                     color: "#E9C46A",
@@ -356,7 +364,7 @@ export default function Hero() {
                 }}
               >
                 <div
-                  className="break-words"
+                  className="hero-gold break-words"
                   style={{
                     fontSize: "clamp(1.1rem, 5vw, 2.6rem)",
                     fontWeight: 800,
@@ -410,10 +418,10 @@ export default function Hero() {
                   pointerEvents: "auto"
                 }}
               >
-                <div className="bg-white/95 border border-yellow-100 rounded-2xl shadow-lg px-4 sm:px-7 py-4 sm:py-6 min-w-[140px] sm:min-w-[220px] max-w-[90vw] sm:max-w-[260px]">
-                  <div className="text-[#E9C46A] font-bold text-base sm:text-lg mb-1">Organize</div>
-                  <div className="text-[#264653] font-semibold text-sm sm:text-base mb-2">Tarefas e Inspirações</div>
-                  <div className="text-[#264653bb] text-xs sm:text-sm">Tudo em um só lugar, com clareza e leveza.</div>
+                <div className="hero-card bg-white/95 border border-yellow-100 rounded-2xl shadow-lg px-4 sm:px-7 py-4 sm:py-6 min-w-[140px] sm:min-w-[220px] max-w-[90vw] sm:max-w-[260px]">
+                  <div className="hero-gold font-bold text-base sm:text-lg mb-1" style={{ color: "#E9C46A" }}>Organize</div>
+                  <div className="hero-petrol font-semibold text-sm sm:text-base mb-2" style={{ color: "#264653" }}>Tarefas e Inspirações</div>
+                  <div className="hero-petrol text-xs sm:text-sm" style={{ color: "#264653bb" }}>Tudo em um só lugar, com clareza e leveza.</div>
                 </div>
               </div>
               {/* Card 2 */}
@@ -426,10 +434,10 @@ export default function Hero() {
                   pointerEvents: "auto"
                 }}
               >
-                <div className="bg-white/95 border border-yellow-100 rounded-2xl shadow-lg px-4 sm:px-7 py-4 sm:py-6 min-w-[140px] sm:min-w-[220px] max-w-[90vw] sm:max-w-[260px]">
-                  <div className="text-[#E9C46A] font-bold text-base sm:text-lg mb-1">Visualize</div>
-                  <div className="text-[#264653] font-semibold text-sm sm:text-base mb-2">Seu progresso</div>
-                  <div className="text-[#264653bb] text-xs sm:text-sm">Acompanhe sua evolução de forma visual.</div>
+                <div className="hero-card bg-white/95 border border-yellow-100 rounded-2xl shadow-lg px-4 sm:px-7 py-4 sm:py-6 min-w-[140px] sm:min-w-[220px] max-w-[90vw] sm:max-w-[260px]">
+                  <div className="hero-gold font-bold text-base sm:text-lg mb-1" style={{ color: "#E9C46A" }}>Visualize</div>
+                  <div className="hero-petrol font-semibold text-sm sm:text-base mb-2" style={{ color: "#264653" }}>Seu progresso</div>
+                  <div className="hero-petrol text-xs sm:text-sm" style={{ color: "#264653bb" }}>Acompanhe sua evolução de forma visual.</div>
                 </div>
               </div>
               {/* Card 3 */}
@@ -442,10 +450,10 @@ export default function Hero() {
                   pointerEvents: "auto"
                 }}
               >
-                <div className="bg-white/95 border border-yellow-100 rounded-2xl shadow-lg px-4 sm:px-7 py-4 sm:py-6 min-w-[140px] sm:min-w-[220px] max-w-[90vw] sm:max-w-[260px]">
-                  <div className="text-[#E9C46A] font-bold text-base sm:text-lg mb-1">Personalize</div>
-                  <div className="text-[#264653] font-semibold text-sm sm:text-base mb-2">Seu jeito</div>
-                  <div className="text-[#264653bb] text-xs sm:text-sm">Adapte o Organizo ao seu estilo de vida.</div>
+                <div className="hero-card bg-white/95 border border-yellow-100 rounded-2xl shadow-lg px-4 sm:px-7 py-4 sm:py-6 min-w-[140px] sm:min-w-[220px] max-w-[90vw] sm:max-w-[260px]">
+                  <div className="hero-gold font-bold text-base sm:text-lg mb-1" style={{ color: "#E9C46A" }}>Personalize</div>
+                  <div className="hero-petrol font-semibold text-sm sm:text-base mb-2" style={{ color: "#264653" }}>Seu jeito</div>
+                  <div className="hero-petrol text-xs sm:text-sm" style={{ color: "#264653bb" }}>Adapte o Organizo ao seu estilo de vida.</div>
                 </div>
               </div>
               {/* Card 4 */}
@@ -458,17 +466,17 @@ export default function Hero() {
                   pointerEvents: "auto"
                 }}
               >
-                <div className="bg-white/95 border border-yellow-100 rounded-2xl shadow-lg px-4 sm:px-7 py-4 sm:py-6 min-w-[140px] sm:min-w-[220px] max-w-[90vw] sm:max-w-[260px]">
-                  <div className="text-[#E9C46A] font-bold text-base sm:text-lg mb-1">Viva melhor</div>
-                  <div className="text-[#264653] font-semibold text-sm sm:text-base mb-2">Com equilíbrio</div>
-                  <div className="text-[#264653bb] text-xs sm:text-sm">Planeje, realize e aproveite cada momento.</div>
+                <div className="hero-card bg-white/95 border border-yellow-100 rounded-2xl shadow-lg px-4 sm:px-7 py-4 sm:py-6 min-w-[140px] sm:min-w-[220px] max-w-[90vw] sm:max-w-[260px]">
+                  <div className="hero-gold font-bold text-base sm:text-lg mb-1" style={{ color: "#E9C46A" }}>Viva melhor</div>
+                  <div className="hero-petrol font-semibold text-sm sm:text-base mb-2" style={{ color: "#264653" }}>Com equilíbrio</div>
+                  <div className="hero-petrol text-xs sm:text-sm" style={{ color: "#264653bb" }}>Planeje, realize e aproveite cada momento.</div>
                 </div>
               </div>
             </div>
             {/* Frase animada centralizada - mais embaixo */}
             <div className="relative z-10 flex flex-col items-center mt-[180px] sm:mt-[340px] px-2">
               <div
-                className="break-words"
+                className="hero-gold break-words"
                 style={{
                   fontSize: "clamp(1.1rem, 4vw, 2.1rem)",
                   fontWeight: 800,
@@ -486,7 +494,7 @@ export default function Hero() {
                 <span className="animate-blink ml-1" style={{ marginLeft: 4 }}>|</span>
               </div>
               <button
-                className="rounded-full px-8 py-3 text-lg font-bold shadow-xl transition-all duration-200 mt-4"
+                className="hero-btn rounded-full px-8 py-3 text-lg font-bold shadow-xl transition-all duration-200 mt-4"
                 style={{
                   background: "#E9C46A",
                   color: "#264653",
@@ -507,7 +515,7 @@ export default function Hero() {
         {layouts[layoutIndex] === "movable" && (
           <div className="w-full h-[60vh] sm:h-[70vh] relative">
             <div
-              className="z-20 mb-8 w-full flex justify-center px-2"
+              className="hero-gold z-20 mb-8 w-full flex justify-center px-2"
               style={{
                 fontSize: "clamp(1.1rem, 4vw, 2.2rem)",
                 fontWeight: 800,
@@ -541,9 +549,9 @@ export default function Hero() {
               onMouseDown={onDragStart}
               onTouchStart={onDragStart}
             >
-              <div className="w-full flex flex-col items-center px-4 sm:px-6 py-10 sm:py-14 bg-white/95 rounded-3xl border border-yellow-200 select-none">
+              <div className="hero-card w-full flex flex-col items-center px-4 sm:px-6 py-10 sm:py-14 bg-white/95 rounded-3xl border border-yellow-200 select-none">
                 <h1
-                  className="font-extrabold tracking-tight mb-7 text-3xl sm:text-5xl"
+                  className="hero-petrol font-extrabold tracking-tight mb-7 text-3xl sm:text-5xl"
                   style={{
                     color: "#264653",
                     fontWeight: 900,
@@ -556,7 +564,7 @@ export default function Hero() {
                   Organizo
                 </h1>
                 <p
-                  className="text-base sm:text-lg font-medium mb-10"
+                  className="hero-petrol text-base sm:text-lg font-medium mb-10"
                   style={{
                     color: "#264653DE",
                     textAlign: "center",
@@ -570,7 +578,7 @@ export default function Hero() {
                 </p>
                 <div className="flex gap-4 flex-col sm:flex-row items-center w-full justify-center">
                   <button
-                    className="rounded-full px-8 py-3 text-lg font-bold shadow-xl transition-all duration-200"
+                    className="hero-btn rounded-full px-8 py-3 text-lg font-bold shadow-xl transition-all duration-200"
                     style={{
                       background: "#E9C46A",
                       color: "#264653",
@@ -585,7 +593,7 @@ export default function Hero() {
                   </button>
                   <a
                     href="#features"
-                    className="inline-block rounded-full border-2 px-8 py-3 text-base font-semibold"
+                    className="hero-border-gold inline-block rounded-full border-2 px-8 py-3 text-base font-semibold"
                     style={{
                       borderColor: "#E9C46A",
                       color: "#E9C46A",
@@ -617,6 +625,7 @@ export default function Hero() {
         <button
           aria-label="Trocar layout"
           onClick={nextLayout}
+          className="hero-card hero-btn hover:bg-yellow-50 focus:outline-none"
           style={{
             background: "#fff",
             border: "1.5px solid #E9C46A",
@@ -630,7 +639,6 @@ export default function Hero() {
             cursor: "pointer",
             transition: "background 0.2s",
           }}
-          className="hover:bg-yellow-50 focus:outline-none"
         >
           {layoutIndex === 0 ? (
             <svg width="24" height="24" fill="none" stroke="#E9C46A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
