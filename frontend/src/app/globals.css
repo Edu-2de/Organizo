@@ -1,7 +1,5 @@
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
 
 /* Paleta de cores customizada usando variáveis */
 :root {
@@ -199,19 +197,7 @@ body.dark-mode .hero-card div {
   color: #e9e9f3 !important;
 }
 
-/* Remove duplicatas antigas e sobrescritas */
-body.dark-mode .hero-bg,
-body.dark-mode .hero-softshape-1,
-body.dark-mode .hero-softshape-2,
-body.dark-mode .hero-softshape-3,
-body.dark-mode .hero-softshape-4,
-body.dark-mode .hero-card,
-body.dark-mode .hero-gold,
-body.dark-mode .hero-petrol,
-body.dark-mode .hero-btn,
-body.dark-mode .hero-border-gold {
-  /* já sobrescrito acima */
-}
+
 
 
 body.dark-mode {
