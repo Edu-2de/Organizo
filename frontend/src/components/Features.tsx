@@ -23,49 +23,49 @@ type FeatureCardProps = {
 const allFeatures = [
   {
     Icon: BoltIcon,
-    accent: "from-[#E9C46A]/30 to-[#fff9e7]/60 text-[#E9C46A]",
+    accent: "text-[#E9C46A]",
     title: "Rápido e Moderno",
     description:
       "Interface instantânea, fluida e elegante. Foco total no essencial, sem distrações.",
   },
   {
     Icon: DevicePhoneMobileIcon,
-    accent: "from-[#A9C5A0]/30 to-[#F6F5F2]/60 text-[#264653]",
+    accent: "text-[#264653]",
     title: "100% Responsivo",
     description:
       "Use em qualquer tela: notebook, tablet ou celular. Sempre bonito e funcional.",
   },
   {
     Icon: Cog6ToothIcon,
-    accent: "from-[#264653]/10 to-[#E9C46A]/10 text-[#264653]",
+    accent: "text-[#264653]",
     title: "Personalizável",
     description:
       "Mude temas, cores e organização em segundos. O Organizo se adapta ao seu fluxo.",
   },
   {
     Icon: ShieldCheckIcon,
-    accent: "from-[#264653]/10 to-[#A9C5A0]/10 text-[#264653]",
+    accent: "text-[#264653]",
     title: "Seguro e Privado",
     description:
       "Seus dados protegidos com criptografia e privacidade total.",
   },
   {
     Icon: ClockIcon,
-    accent: "from-[#E9C46A]/20 to-[#A9C5A0]/10 text-[#E9C46A]",
+    accent: "text-[#E9C46A]",
     title: "Produtividade Real",
     description:
       "Ferramentas para você focar no que importa e ganhar tempo de verdade.",
   },
   {
     Icon: SparklesIcon,
-    accent: "from-[#fff9e7]/40 to-[#E9C46A]/20 text-[#E9C46A]",
+    accent: "text-[#E9C46A]",
     title: "Design Inspirador",
     description:
       "Visual minimalista, leve e agradável para motivar sua rotina.",
   },
   {
     Icon: AdjustmentsHorizontalIcon,
-    accent: "from-[#A9C5A0]/20 to-[#fff9e7]/40 text-[#264653]",
+    accent: "text-[#264653]",
     title: "Totalmente Ajustável",
     description:
       "Adapte listas, categorias e temas ao seu jeito de organizar.",
@@ -136,7 +136,7 @@ function FeatureCard({ Icon, accent, title, description, index, shuffle: isShuff
       ref={ref}
       tabIndex={0}
       className={`
-        group bg-white/90 border border-[#f6f5f2] rounded-3xl shadow-xl
+        group bg-white border border-[#f6f5f2] rounded-3xl shadow-xl
         px-12 py-14 flex flex-col items-center text-center
         transition-all duration-700 ease-[cubic-bezier(.23,1.04,.44,.98)]
         cursor-pointer outline-none
@@ -152,18 +152,19 @@ function FeatureCard({ Icon, accent, title, description, index, shuffle: isShuff
         width: "100%",
         margin: "0 auto",
         transitionDelay: `${index * 120}ms`,
-        background:
-          "linear-gradient(135deg,rgba(255,255,255,0.97) 80%,rgba(233,196,106,0.09) 100%)",
+        background: "#fff",
         boxShadow: "0 4px 32px 0 #E9C46A13",
       }}
     >
       <div
         className={`
-          mb-6 bg-gradient-to-br ${accent} rounded-2xl p-5 flex items-center justify-center
+          mb-6 rounded-2xl p-5 flex items-center justify-center
           transition-all duration-300 group-hover:scale-110 group-focus:scale-110
           shadow
+          ${accent}
         `}
         style={{
+          background: "#F6F5F2",
           boxShadow: "0 4px 16px 0 #E9C46A22",
         }}
       >
@@ -204,21 +205,21 @@ export default function Features() {
     }, 350);
   }
 
-    return (
-    <section className="relative py-24 bg-gradient-to-br from-[#fff9e7] via-[#F6F5F2] to-[#A9C5A0]/20 overflow-hidden">
+  return (
+    <section className="relative py-24 bg-[#F6F5F2] overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 relative z-10">
         {/* Título animado e criativo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="flex items-center gap-2">
-            <span className="inline-block px-4 py-1 rounded-full bg-[#E9C46A]/20 text-[#E9C46A] text-xs font-bold tracking-widest uppercase animate-pulse shadow-sm">
-              Descubra o diferencial
-            </span>
+          <div className="flex items-center justify-center gap-4 mb-3">
+            <h2 className="text-4xl md:text-5xl font-black text-center text-[#264653] tracking-tight drop-shadow-sm leading-tight">
+              O que faz o <span className="text-[#E9C46A]">Organizo</span> ser único?
+            </h2>
             <button
               aria-label="Embaralhar recursos"
               onClick={handleRefresh}
               disabled={refreshing}
               className={`
-                ml-2 p-2 rounded-full border border-[#E9C46A]/40 bg-white/80 shadow transition
+                p-5 rounded-full border-2 border-[#E9C46A]/40 bg-white/90 shadow-lg transition
                 hover:bg-[#fff9e7] hover:scale-110 active:scale-95
                 focus:outline-none focus:ring-2 focus:ring-[#E9C46A]/40
                 ${refreshing ? "opacity-60 pointer-events-none" : ""}
@@ -226,13 +227,10 @@ export default function Features() {
               style={{ transition: "all 0.2s" }}
             >
               <ArrowPathIcon
-                className={`h-5 w-5 text-[#E9C46A] ${refreshing ? "animate-spin" : ""}`}
+                className={`h-8 w-8 text-[#E9C46A] ${refreshing ? "animate-spin" : ""}`}
               />
             </button>
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-center mb-3 text-[#264653] tracking-tight drop-shadow-sm leading-tight">
-            O que faz o <span className="text-[#E9C46A]">Organizo</span> ser único?
-          </h2>
         </div>
         {/* Mini texto animado */}
         <div className="flex justify-center mb-16">
@@ -249,13 +247,6 @@ export default function Features() {
           ))}
         </div>
       </div>
-      {/* Linha decorativa animada REMOVIDA */}
-      <style jsx>{`
-        @keyframes floatLine {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(18px); }
-        }
-      `}</style>
     </section>
   );
 }
