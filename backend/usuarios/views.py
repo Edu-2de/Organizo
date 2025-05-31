@@ -1,32 +1,37 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from django.contrib.auth import authenticate, get_user_model
+from rest_framework_simplejwt.tokens import RefreshToken # type: ignore
+from rest_framework.permissions import IsAuthenticated
 
-def registro(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            auth_login(request, user)
-            return redirect('perfil')
-    else:
-        form = UserCreationForm()
-    return render(request, 'usuarios/registro.html', {'form': form})
+User = get_user_model()
 
-def login(request):
-    if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
-            auth_login(request, user)
-            return redirect('perfil')
-    else:
-        form = AuthenticationForm()
-    return render(request, 'usuarios/login.html', {'form': form})
+class LoginAPI(APIView):
+    permission_classes = [permissions.AllowAny]
 
-def logout(request):
-    auth_logout(request)
-    return redirect('login')
+    def post(self, request):
+        email = request.data.get("email")
+        password = request.data.get("password")
+        user = authenticate(request, username=email, password=password)
+        if user:
+            refresh = RefreshToken.for_user(user)
+            return Response({"token": str(refresh.access_token)})
+        return Response({"detail": "Credenciais inválidas"}, status=400)
 
-def perfil(request):
-    return render(request, 'usuarios/perfil.html')
+class RegisterAPI(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        nome = request.data.get("nome")
+        email = request.data.get("email")
+        password = request.data.get("password")
+        if not all([nome, email, password]):
+            return Response({"detail": "Dados incompletos"}, status=400)
+        if User.objects.filter(email=email).exists():
+            return Response({"detail": "E-mail já cadastrado"}, status=400)
+        user = User.objects.create_user(username=email, email=email, password=password, first_name=nome)
+        refresh = RefreshToken.for_user(user)
+        return Response({"token": str(refresh.access_token)})
+    
+

@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { login, register } from "@/api/auth"; // importa os fetchs
 
 // Hook de tema simples para alternar dark/light (usando body.dark-mode)
 function useLocalTheme() {
@@ -12,7 +14,6 @@ function useLocalTheme() {
   });
 
   useEffect(() => {
-    // Aplica/remover classe dark-mode no body
     if (typeof window !== "undefined") {
       document.body.classList.toggle("dark-mode", theme === "dark");
       localStorage.setItem("theme", theme);
@@ -36,6 +37,8 @@ type AnimState =
   | "kick-in";
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
@@ -77,25 +80,53 @@ export default function LoginPage() {
   const [showLogin, setShowLogin] = useState(true);
   const [showRegister, setShowRegister] = useState(false);
 
-  function handleLogin(e: React.FormEvent) {
+  // LOGIN
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
+    setMsg(null);
     if (email && senha) {
-      setMsg("🎉 Login realizado com sucesso!");
-      setTimeout(() => setMsg(null), 2000);
+      try {
+        const data = await login(email, senha);
+        localStorage.setItem("token", data.token);
+        setMsg("🎉 Login realizado com sucesso!");
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1200);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
+        setMsg(err.message || "Erro ao fazer login");
+      }
     } else {
       setMsg("Preencha todos os campos.");
     }
   }
 
-  function handleRegister(e: React.FormEvent) {
+  // REGISTRO
+  async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
+    setRegisterMsg(null);
     if (nome && email && senha && confirmSenha) {
       if (senha !== confirmSenha) {
         setRegisterMsg("As senhas não coincidem.");
         return;
       }
-      setRegisterMsg("🎉 Cadastro realizado com sucesso!");
-      setTimeout(() => setRegisterMsg(null), 2000);
+      try {
+        const data = await register(nome, email, senha);
+        localStorage.setItem("token", data.token);
+        setRegisterMsg("🎉 Cadastro realizado com sucesso!");
+        setTimeout(() => {
+          // Limpa campos de registro
+          setNome("");
+          setEmail("");
+          setSenha("");
+          setConfirmSenha("");
+          // Troca para tela de login animada
+          kickSwitchForm();
+        }, 1300);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
+        setRegisterMsg(err.message || "Erro ao cadastrar");
+      }
     } else {
       setRegisterMsg("Preencha todos os campos.");
     }
@@ -107,7 +138,6 @@ export default function LoginPage() {
     setRegisterMsg(null);
 
     if (!isRegister) {
-      // Login -> Register
       setAnimState("kick-email");
       setTimeout(() => setLoginFields(fields => fields.filter(f => f !== "email")), 250);
       setTimeout(() => setAnimState("kick-senha"), 320);
@@ -118,7 +148,6 @@ export default function LoginPage() {
         setShowRegister(true);
         setIsRegister(true);
         setRegisterFields([]);
-        // Entrada dos campos de registro um por um
         setTimeout(() => {
           setRegisterFields(["nome"]);
           setAnimState("kick-in");
@@ -129,7 +158,6 @@ export default function LoginPage() {
         }, 80);
       }, 700);
     } else {
-      // Register -> Login
       setAnimState("kick-nome");
       setTimeout(() => setRegisterFields(fields => fields.filter(f => f !== "nome")), 250);
       setTimeout(() => setAnimState("kick-email"), 320);
@@ -144,7 +172,6 @@ export default function LoginPage() {
         setShowLogin(true);
         setIsRegister(false);
         setLoginFields([]);
-        // Entrada dos campos de login um por um
         setTimeout(() => {
           setLoginFields(["email"]);
           setAnimState("kick-in");
@@ -155,7 +182,6 @@ export default function LoginPage() {
     }
   }
 
-  // Utilitário para aplicar animação de chute campo a campo
   function getKickClass(field: string) {
     if (animState === `kick-${field}`) return "animate-chutao-out";
     if (animState === "kick-finish") return "opacity-0 pointer-events-none";
@@ -572,7 +598,6 @@ export default function LoginPage() {
         .animate-fade-in {
           animation: fade-in 1.2s ease both;
         }
-        /* Chutão para fora campo a campo */
         @keyframes chutao-out {
           0% { opacity: 1; transform: translateX(0) rotate(0deg) scale(1);}
           60% { opacity: 1; transform: translateX(40px) rotate(12deg) scale(1.08);}
@@ -581,7 +606,6 @@ export default function LoginPage() {
         .animate-chutao-out {
           animation: chutao-out 0.25s cubic-bezier(.7,0,.3,1) both;
         }
-        /* Chutão para dentro */
         @keyframes chutao-in {
           0% { opacity: 0; transform: translateX(-120vw) rotate(-40deg) scale(0.9);}
           60% { opacity: 1; transform: translateX(-40px) rotate(-12deg) scale(1.08);}
@@ -590,8 +614,6 @@ export default function LoginPage() {
         .animate-chutao-in {
           animation: chutao-in 0.5s cubic-bezier(.7,0,.3,1) both;
         }
-
-        /* DARK MODE ESTILO */
         body.dark-mode {
           background: #101624 !important;
         }
@@ -634,7 +656,6 @@ export default function LoginPage() {
         body.dark-mode .dark-mode-blob3 {
           background: #2a9df41a !important;
         }
-        /* Hover azul nas letras no modo escuro */
         body.dark-mode .dark-mode-logo-letter:hover {
           color: #2a9df4 !important;
         }
