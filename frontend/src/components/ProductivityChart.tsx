@@ -74,6 +74,7 @@ export default function ProductivityChart({ tasks }: { tasks: TaskType[] }) {
   const colors = THEME_COLORS[themeKey];
 
   const week = getCurrentWeek();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const data = week.map((d, idx) => {
     const count = tasks.filter(
       t =>

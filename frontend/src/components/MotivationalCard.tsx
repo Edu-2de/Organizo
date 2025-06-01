@@ -30,6 +30,7 @@ const backgroundsByTheme = {
 export default function MotivationalCard() {
   const themeCtx = useTheme?.();
   const themeKey = themeCtx?.themeKey || "classic";
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const theme = THEMES[themeKey];
 
   // Escolhe backgrounds conforme o tema

@@ -14,6 +14,7 @@ export default function DashboardPage() {
   const [collapsed, setCollapsed] = useState(false);
 
   // Use o tema para o fundo do dashboard
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { theme, themeKey } = useTheme?.() || {};
   // Se não houver tema, use cor padrão
   const bgColor = theme?.beige || "#F6F5F2";

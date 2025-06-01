@@ -1,6 +1,8 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import { useTheme } from "@/components/ThemeContext";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { THEMES } from "@/components/themes";
 
 // Paletas de post-it por tema
