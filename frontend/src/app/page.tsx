@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
@@ -9,12 +9,16 @@ import MiniDashboard from "@/components/MiniDashboard";
 
 export default function Home() {
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && localStorage.getItem("token")) {
+    setIsClient(true);
+    if (localStorage.getItem("token")) {
       router.replace("/dashboard");
     }
   }, [router]);
+
+  if (!isClient) return null; 
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 main-bg">

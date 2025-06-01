@@ -1,17 +1,56 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useTheme } from "@/components/ThemeContext";
+import { THEMES } from "@/components/themes";
 
-const GOLD = "#E9C46A";
-const DEFAULT = "#264653";
 const WORD = "Organizo";
-const ANIMATION_INTERVAL = 115; // ms entre letras
-const ANIMATION_PAUSE = 1500;   // ms entre animações
-const JUMP_HEIGHT = 18;         // px do pulo
-const FINAL_HOLD = 1000;        // ms todas coloridas e animadas no final
+const ANIMATION_INTERVAL = 115;
+const FINAL_HOLD = 1000;
 
 export function LogoOrganizo() {
-  // highlight: 0 = só O colorido, 1..N = animando, 'final' = todas coloridas animadas
   const [highlight, setHighlight] = useState<number | "final">(0);
   const [animating, setAnimating] = useState(false);
+  const animatingRef = useRef(false);
+
+  // Tema
+  const themeCtx = useTheme?.();
+  const themeKey = themeCtx?.themeKey || "classic";
+  const theme = THEMES[themeKey];
+
+  // Cores por tema
+  const themeColors = {
+    classic: {
+      main: theme.gold,
+      text: theme.petrol,
+      shadow: "#E9C46A66",
+      shadowJump: "#E9C46A44",
+      shadowFinal: "#E9C46A66",
+    },
+    sunset: {
+      main: theme.deepPurple,
+      text: theme.graphite,
+      shadow: "#A4508B66",
+      shadowJump: "#A4508B44",
+      shadowFinal: "#A4508B66",
+    },
+    ocean: {
+      main: theme.accent,
+      text: theme.petrol,
+      shadow: "#247BA066",
+      shadowJump: "#247BA044",
+      shadowFinal: "#247BA066",
+    },
+  };
+
+  const currentColors = themeColors[themeKey] || themeColors.classic;
+
+  // Inicia animação ao passar o mouse
+  function triggerAnimation() {
+    if (!animatingRef.current) {
+      setAnimating(true);
+      setHighlight(1); // começa direto no 'r'
+      animatingRef.current = true;
+    }
+  }
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -27,14 +66,9 @@ export function LogoOrganizo() {
     if (highlight === "final") {
       timeout = setTimeout(() => {
         setAnimating(false);
+        animatingRef.current = false;
         setHighlight(0);
       }, FINAL_HOLD);
-    }
-    if (!animating && highlight === 0) {
-      timeout = setTimeout(() => {
-        setAnimating(true);
-        setHighlight(1); // começa direto no 'r'
-      }, ANIMATION_PAUSE * 2);
     }
 
     return () => {
@@ -52,20 +86,21 @@ export function LogoOrganizo() {
         userSelect: "none",
         minHeight: "60px",
         lineHeight: 1.1,
+        cursor: "pointer"
       }}
+      onMouseEnter={triggerAnimation}
     >
       {WORD.split("").map((char, idx) => {
-        // Só o O inicial SEM efeito de pulo
         if (idx === 0) {
           return (
             <span
               key={idx}
               style={{
-                color: GOLD,
+                color: currentColors.main,
                 transition: "color 0.22s cubic-bezier(.4,1,.6,1)",
                 display: "inline-block",
                 textShadow: highlight === "final"
-                  ? "0 2px 18px #E9C46A66"
+                  ? currentColors.shadowFinal
                   : "none",
                 transform: highlight === "final"
                   ? "scale(1.15) rotate(-6deg)"
@@ -79,27 +114,25 @@ export function LogoOrganizo() {
           );
         }
 
-        // Efeito de "pulo" para a letra que está sendo animada
         const isActive =
           (typeof highlight === "number" && highlight === idx) ||
           (highlight === "final");
 
         const color =
           highlight === "final"
-            ? GOLD
+            ? currentColors.main
             : isActive
-              ? GOLD
-              : DEFAULT;
+              ? currentColors.main
+              : currentColors.text;
 
         const jump =
           (typeof highlight === "number" && highlight === idx);
 
-        // Efeito de pulo só na letra ativa (não no O, nunca) e efeito final em todas
         const jumpStyle =
           highlight === "final"
             ? {
                 color,
-                textShadow: "0 2px 18px #E9C46A55, 0 0px 0 #fff9c499",
+                textShadow: `${currentColors.shadowFinal}, 0 0px 0 #fff9c499`,
                 transform: `scale(1.21) rotate(${idx % 2 === 0 ? 9 : -8}deg) translateY(-8px)`,
                 transition: "color 0.26s, transform 0.42s cubic-bezier(.68,2,.3,1), text-shadow 0.22s",
                 zIndex: 1,
@@ -108,7 +141,7 @@ export function LogoOrganizo() {
             : jump
               ? {
                   color,
-                  textShadow: "0 4px 12px #E9C46A44, 0 2px 0 #fff9c4cc",
+                  textShadow: `${currentColors.shadowJump}, 0 2px 0 #fff9c4cc`,
                   transform: "translateY(-16px) scale(1.13)",
                   transition: "color 0.22s cubic-bezier(.4,1,.6,1), transform 0.28s cubic-bezier(.7,2,.4,1), text-shadow 0.22s",
                   zIndex: 1,

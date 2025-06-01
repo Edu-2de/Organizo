@@ -48,7 +48,7 @@ const menuItems = [
   { key: "home", label: "Início", icon: Icons.home, href: "/dashboard?tab=home" },
   { key: "tasks", label: "Tarefas", icon: Icons.tasks, href: "/dashboard?tab=tasks" },
   { key: "calendar", label: "Agenda", icon: Icons.calendar, href: "/dashboard?tab=calendar" },
-  { key: "settings", label: "Configurações", icon: Icons.settings, href: "/dashboard?tab=settings" },
+  { key: "settings", label: "Configurações", icon: Icons.settings, href: "/dashboard/configuracoes" },
 ];
 
 function OnlyOLogo() {
@@ -69,10 +69,16 @@ function OnlyOLogo() {
   );
 }
 
-export default function Sidebar({ collapsed, setCollapsed }) {
+interface SidebarProps {
+  collapsed: boolean;
+  setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeTab = useMemo(() => searchParams?.get("tab") || "home", [searchParams]);
+
   const [logoutAnim, setLogoutAnim] = useState(false);
 
   // animação botão sair

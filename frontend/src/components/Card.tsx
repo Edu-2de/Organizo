@@ -1,0 +1,34 @@
+import React from "react";
+import { useTheme } from "@/components/ThemeContext";
+import COLORS from "@/components/colors";
+
+type CardProps = {
+  className?: string;
+  children?: React.ReactNode;
+  style?: React.CSSProperties;
+};
+
+export default function Card({ children, className = "", style, ...rest }: CardProps) {
+  const themeCtx = useTheme?.();
+  const isClassic = themeCtx?.themeKey === "classic" || !themeCtx?.theme;
+  const theme = isClassic ? COLORS : themeCtx.theme;
+
+  // Permite sobrescrever o estilo via prop, mas aplica o padrão do tema se não houver
+  const cardStyle: React.CSSProperties = {
+    borderRadius: 18,
+    background: isClassic ? "#fff" : theme.beige,
+    boxShadow: isClassic ? "0 2px 8px #e9c46a33" : `0 2px 12px ${theme.accent}33`,
+    border: isClassic ? "1px solid #e2e3e7" : `2px solid ${theme.accent}`,
+    ...style,
+  };
+
+  return (
+    <div
+      className={`border ${className}`}
+      style={cardStyle}
+      {...rest}
+    >
+      {children}
+    </div>
+  );
+}

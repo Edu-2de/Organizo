@@ -5,12 +5,18 @@ import MobileSidebar from "@/components/MobileSidebar";
 import DashboardContent from "@/components/DashboardContent";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "@/components/ThemeContext";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [collapsed, setCollapsed] = useState(false); // <-- novo estado
+  const [collapsed, setCollapsed] = useState(false);
+
+  // Use o tema para o fundo do dashboard
+  const { theme, themeKey } = useTheme?.() || {};
+  // Se não houver tema, use cor padrão
+  const bgColor = theme?.beige || "#F6F5F2";
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -23,14 +29,17 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-[#F6F5F2]">
+      <main className="min-h-screen flex items-center justify-center" style={{ background: bgColor }}>
         <span className="text-[#264653] text-xl font-semibold">Carregando...</span>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen w-full flex bg-[#F6F5F2] overflow-x-auto">
+    <main
+      className="min-h-screen w-full flex overflow-x-auto"
+      style={{ background: bgColor, transition: "background 0.3s" }}
+    >
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
       <MobileSidebar show={showSidebar} setShow={setShowSidebar} />
       <button
@@ -40,8 +49,6 @@ export default function DashboardPage() {
       >
         <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
       </button>
-      
-      {/* DashboardContent agora recebe a margin condicional */}
       <div className={`transition-all duration-300 w-full ${collapsed ? "ml-20" : "ml-72"}`}>
         <DashboardContent />
       </div>
