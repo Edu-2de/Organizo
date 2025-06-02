@@ -71,5 +71,3 @@ Abra uma issue ou envie um pull request.
 Este projeto está sob a licença MIT.
 
 ---
-
-Feito com 💙 por [Seu Nome ou Equipe]
