@@ -75,7 +75,7 @@ export default function DashboardContent() {
         color: idx % 2 === 0 ? theme.yellow : theme.pink,
       }))
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [theme.yellow, theme.pink]);
 
   const [taskInput, setTaskInput] = useState("");
@@ -188,6 +188,80 @@ export default function DashboardContent() {
     }));
   }
 
+  // Header styles por tema
+  const headerStyles = isClassic
+    ? {
+        borderColor: "#E9C46A",
+        background: "#fff8",
+        backdropFilter: "blur(4px)",
+      }
+    : themeCtx?.themeKey === "sunset"
+      ? {
+          borderColor: "#FFD452",
+          background: "#FFF5E1",
+          boxShadow: "0 2px 0 0 #FFD45222",
+          backdropFilter: "blur(2px)",
+          transition: "all 0.3s"
+        }
+      : themeCtx?.themeKey === "ocean"
+        ? {
+            borderColor: "#97C1A9",
+            background: "#E0FBFC",
+            boxShadow: "0 2px 0 0 #97C1A9",
+            backdropFilter: "blur(2px)",
+            transition: "all 0.3s"
+          }
+        : {
+            borderColor: theme.gold,
+            background: "#fff8",
+            backdropFilter: "blur(4px)",
+            transition: "border-color 0.3s"
+          };
+
+  const headerTitleColor = isClassic
+    ? theme.graphite
+    : themeCtx?.themeKey === "sunset"
+      ? "#A4508B"
+      : themeCtx?.themeKey === "ocean"
+        ? "#247BA0"
+        : theme.graphite;
+
+  const headerInputClass =
+    isClassic
+      ? "bg-[#f6f6f8] border-[#ececec]"
+      : themeCtx?.themeKey === "sunset"
+        ? "bg-[#FFF5E1] border-[#FFD452] text-[#A4508B]"
+        : themeCtx?.themeKey === "ocean"
+          ? "bg-[#E0FBFC] border-[#97C1A9] text-[#155263] font-mono"
+          : "";
+
+  const headerInputColor =
+    isClassic
+      ? theme.petrol
+      : themeCtx?.themeKey === "sunset"
+        ? "#A4508B"
+        : themeCtx?.themeKey === "ocean"
+          ? "#155263"
+          : theme.petrol;
+
+  const headerDateClass =
+    isClassic
+      ? ""
+      : themeCtx?.themeKey === "sunset"
+        ? "bg-[#FFD45222] px-2 py-1 rounded-lg"
+        : themeCtx?.themeKey === "ocean"
+          ? "bg-[#B6E6F533] px-2 py-1 rounded-lg font-mono"
+          : "";
+
+  const headerDateColor =
+    isClassic
+      ? theme.olive
+      : themeCtx?.themeKey === "sunset"
+        ? "#F76D77"
+        : themeCtx?.themeKey === "ocean"
+          ? "#247BA0"
+          : theme.olive;
+
   return (
     <div
       className="relative min-h-screen w-full"
@@ -199,30 +273,35 @@ export default function DashboardContent() {
     >
       {/* Header */}
       <header
-        className="w-full px-2 sm:px-4 md:px-8 pt-4 sm:pt-8 pb-3 flex flex-col md:flex-row items-start md:items-center justify-between border-b"
-        style={
-          isClassic
-            ? { borderColor: "#E9C46A", background: "#fff8", backdropFilter: "blur(4px)" }
-            : { borderColor: theme.gold, background: "#fff8", backdropFilter: "blur(4px)", transition: "border-color 0.3s" }
-        }
+        className={`w-full px-2 sm:px-4 md:px-8 pt-4 sm:pt-8 pb-3 flex flex-col md:flex-row items-start md:items-center justify-between border-b transition-all duration-300`}
+        style={headerStyles}
       >
         <h1
           className="text-2xl sm:text-3xl font-extrabold tracking-tight select-none"
-          style={{ color: theme.graphite, transition: "color 0.3s" }}
+          style={{
+            color: headerTitleColor,
+            transition: "color 0.3s"
+          }}
         >
           Dashboard
         </h1>
         <div className="flex gap-2 sm:gap-4 items-center w-full md:w-auto">
           <input
-            className="rounded-xl border px-3 py-1.5 sm:px-4 sm:py-2 bg-[#f6f6f8] text-base focus:outline-none transition placeholder:text-[#b6b7bb] border-[#ececec] shadow-sm w-full max-w-xs"
+            className={`rounded-xl border px-3 py-1.5 sm:px-4 sm:py-2 text-base focus:outline-none transition placeholder:text-[#b6b7bb] shadow-sm w-full max-w-xs ${headerInputClass}`}
             placeholder="Buscar tarefa, compromisso..."
             type="search"
-            style={{ color: theme.petrol, transition: "color 0.3s" }}
+            style={{
+              color: headerInputColor,
+              transition: "color 0.3s"
+            }}
             disabled
           />
           <span
-            className="hidden sm:block text-sm font-medium min-w-max"
-            style={{ color: theme.olive, transition: "color 0.3s" }}
+            className={`hidden sm:block text-sm font-medium min-w-max ${headerDateClass}`}
+            style={{
+              color: headerDateColor,
+              transition: "color 0.3s"
+            }}
           >
             {new Date().toLocaleDateString("pt-BR", { weekday: "long", month: "long", day: "numeric" })}
           </span>
