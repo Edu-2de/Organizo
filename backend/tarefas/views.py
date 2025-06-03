@@ -16,4 +16,7 @@ class TarefaViewSet(ModelViewSet):
     queryset = Tarefa.objects.all().order_by('-id')
     serializer_class = TarefaSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'post', 'put', 'patch', 'delete']
+    lookup_field = 'id'
+
   

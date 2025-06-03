@@ -35,3 +35,27 @@ class RegisterAPI(APIView):
         return Response({"token": str(refresh.access_token)})
     
 
+class UsuarioViewSet(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        data = {
+            "id": user.id,
+            "nome": user.first_name,
+            "email": user.email,
+            "is_staff": user.is_staff,
+            "is_active": user.is_active,
+        }
+        return Response(data)
+
+    def put(self, request):
+        user = request.user
+        nome = request.data.get("nome")
+        email = request.data.get("email")
+        if nome:
+            user.first_name = nome
+        if email:
+            user.email = email
+        user.save()
+        return Response({"detail": "Usuário atualizado com sucesso"})
