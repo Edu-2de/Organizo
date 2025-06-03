@@ -135,7 +135,7 @@ export default function CircularProgressBar({
 
     frame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frame);
-    // eslint-disable-next-line
+    
   }, [percentage, circ]);
 
   // Wrapper para aplicar estilos de fundo/borda nos temas sunset/ocean
