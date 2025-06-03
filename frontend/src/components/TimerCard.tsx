@@ -64,6 +64,7 @@ function ScrollPicker({
   // Scroll ao arrastar
   function handleWheel(e: React.WheelEvent<HTMLDivElement>) {
     e.preventDefault();
+    // eslint-disable-next-line prefer-const
     let idx = options.indexOf(value);
     if (e.deltaY > 0 && idx < options.length - 1) setValue(options[idx + 1]);
     if (e.deltaY < 0 && idx > 0) setValue(options[idx - 1]);
@@ -168,6 +169,7 @@ export default function TimerCard() {
       setAlarmTarget(null);
     } else {
       const now = new Date();
+      // eslint-disable-next-line prefer-const
       let target = new Date(now);
       target.setHours(hour, minute, 0, 0);
       if (target <= now) target.setDate(target.getDate() + 1);

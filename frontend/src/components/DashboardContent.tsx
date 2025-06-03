@@ -63,20 +63,26 @@ export default function DashboardContent() {
   ]);
 
   // Notas com cor do tema
+  // Use fallback colors if yellow/pink are not present in theme
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const yellow = (theme as any).yellow ?? "#FFD452";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pink = (theme as any).pink ?? "#F76D77";
+
   const [notes, setNotes] = useState<NoteType[]>([
-    { text: "Lembrete: enviar e-mail", color: theme.yellow, x: 25, y: 20 },
-    { text: "Chamar o fornecedor", color: theme.pink, x: 110, y: 60 },
+    { text: "Lembrete: enviar e-mail", color: yellow, x: 25, y: 20 },
+    { text: "Chamar o fornecedor", color: pink, x: 110, y: 60 },
   ]);
 
   useEffect(() => {
     setNotes(notes =>
       notes.map((note, idx) => ({
         ...note,
-        color: idx % 2 === 0 ? theme.yellow : theme.pink,
+        color: idx % 2 === 0 ? yellow : pink,
       }))
     );
      
-  }, [theme.yellow, theme.pink]);
+  }, [yellow, pink]);
 
   const [taskInput, setTaskInput] = useState("");
   const [subtaskInputs, setSubtaskInputs] = useState<{ [k: number]: string }>({});

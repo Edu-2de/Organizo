@@ -28,8 +28,8 @@ export default function CircularProgressBar({
       color: COLORS.gold,
       bg: COLORS.beige,
       shadow: "#E9C46A33",
-      circleProps: {},
-      progressProps: {},
+      circleProps: { style: {} },
+      progressProps: { style: {} },
       wrapper: {},
       children: {},
     },
@@ -140,7 +140,7 @@ export default function CircularProgressBar({
 
   // Wrapper para aplicar estilos de fundo/borda nos temas sunset/ocean
   const Wrapper = ({ children: wrapChildren }: { children: React.ReactNode }) =>
-    isClassic ? <>{wrapChildren}</> : <div style={current.wrapper.style}>{wrapChildren}</div>;
+    isClassic ? <>{wrapChildren}</> : <div style={current.wrapper && "style" in current.wrapper ? current.wrapper.style : {}}>{wrapChildren}</div>;
 
   return (
     <Wrapper>
@@ -178,7 +178,7 @@ export default function CircularProgressBar({
           <foreignObject x={stroke / 2} y={stroke / 2} width={size - stroke} height={size - stroke}>
             <div
               className="flex items-center justify-center w-full h-full text-center"
-              style={current.children.style}
+              style={current.children && "style" in current.children ? current.children.style : undefined}
             >
               {children}
             </div>

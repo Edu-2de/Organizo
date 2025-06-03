@@ -25,6 +25,7 @@ export default function CalendarWeek({
 }: CalendarWeekProps) {
   const themeCtx = useTheme?.();
   const isClassic = themeCtx?.themeKey === "classic" || !themeCtx?.theme;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const theme = isClassic ? COLORS : themeCtx.theme;
 
   // Definições de cores para cada tema (mais clean e únicos para sunset/ocean)
@@ -43,7 +44,10 @@ export default function CalendarWeek({
       eventDot: COLORS.gold,
       eventText: COLORS.petrol,
       emptyText: "#A9C5A0",
-      accent: COLORS.accent,
+      accent: COLORS.gold,
+      dayCircle: COLORS.gold,
+      dayCircleSelected: COLORS.gold,
+      dayCircleToday: COLORS.gold,
     },
     sunset: {
       cardBg: "#FFF5E1", // clean, sem degradê
