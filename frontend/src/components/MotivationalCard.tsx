@@ -14,7 +14,7 @@ const phrases = [
   "Acredite no seu potencial e faça acontecer!"
 ];
 
-// Cores de fundo por tema (clean, sem degradê)
+// Cores de fundo por tema
 const backgroundsByTheme = {
   classic: [
     "#fffbe8", "#f1e9d2", "#fff9c4"
@@ -23,7 +23,7 @@ const backgroundsByTheme = {
     "#FFF5E1", "#FFAF7B", "#F76D77"
   ],
   ocean: [
-    "#E0FBFC", "#97C1A9", "#B6E6F5", "#F6F8FA", "#247BA0"
+    "#F7FEFF", "#E0FBFC", "#B6E6F5", "#fff"
   ]
 };
 
@@ -126,45 +126,87 @@ export default function MotivationalCard() {
     },
     ocean: {
       icon: "#247BA0",
-      title: "#155263",
+      title: "#247BA0",
       text: "#155263",
       button1: "#247BA0",
-      button1Hover: "#97C1A9",
-      button1Text: "#E0FBFC",
-      button2: "#97C1A9",
-      button2Hover: "#3A506B",
-      button2Text: "#155263",
+      button1Hover: "#155263",
+      button1Text: "#fff",
+      button2: "#B6E6F5",
+      button2Hover: "#97C1A9",
+      button2Text: "#247BA0",
       tooltipBg: "#E0FBFC",
       tooltipText: "#155263",
-      shineColor: "#155263"
+      shineColor: "#247BA0"
     }
   };
 
   const colors = themeColors[themeKey] || themeColors.classic;
 
-  // Ajuste para garantir contraste do texto no fundo
-  const cardStyle = {
-    background: bg,
-    border: "none",
-    boxShadow: `0 1px 6px ${colors.icon}11`,
-    color: colors.text
-  };
+  // Estilo especial para o tema ocean: clean, flat, sem degrade, mais "card" e menos sombra
+  const cardStyle =
+    themeKey === "ocean"
+      ? {
+          background: bg,
+          border: "1.5px solid #B6E6F5",
+          boxShadow: "0 2px 8px #B6E6F522",
+          color: colors.text,
+          borderRadius: "1.25rem",
+          padding: "1.5rem 1.2rem",
+          fontFamily: "'Inter', 'Segoe UI', Arial, sans-serif",
+          minHeight: 130,
+          transition: "background 0.5s, box-shadow 0.4s",
+          display: "flex",
+          flexDirection: "column" as const,
+          alignItems: "center" as const,
+          justifyContent: "center" as const,
+        }
+      : {
+          background: bg,
+          color: colors.text
+        };
 
   return (
     <Card
       className={`relative flex flex-col items-center justify-center min-h-[110px] sm:min-h-[120px] px-3 py-5
         ${themeKey === "sunset" ? "rounded-xl border border-[#FFD45244] shadow-none" : ""}
-        ${themeKey === "ocean" ? "rounded-md border border-[#97C1A9] shadow-none" : ""}
+        ${themeKey === "ocean" ? "rounded-2xl border-0 shadow-none" : ""}
         ${themeKey === "classic" ? "rounded-lg shadow" : ""}
         transition-all duration-500
         ${slide ? "animate-fade-out" : "animate-fade-in"}
+        ${themeKey === "ocean" ? "backdrop-blur-0" : ""}
       `}
       style={cardStyle}
     >
       <audio ref={audioRef} src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfae6c2.mp3" preload="auto" />
-      <div className="flex items-center gap-2 mb-2">
-        <SparklesIcon className="w-5 h-5" style={{ color: colors.icon }} />
-        <span className="text-base sm:text-lg font-semibold select-none" style={{ color: colors.title }}>
+      <div
+        className="flex items-center gap-2 mb-2"
+        style={
+          themeKey === "ocean"
+            ? {
+                width: "100%",
+                justifyContent: "flex-start",
+                marginBottom: "0.5rem"
+              }
+            : undefined
+        }
+      >
+        <SparklesIcon
+          className="w-5 h-5"
+          style={{
+            color: colors.icon,
+            filter: themeKey === "ocean" ? "none" : undefined,
+            marginRight: themeKey === "ocean" ? "0.25rem" : undefined
+          }}
+        />
+        <span
+          className="text-base sm:text-lg font-semibold select-none"
+          style={{
+            color: colors.title,
+            letterSpacing: themeKey === "ocean" ? "0.01em" : undefined,
+            fontFamily: themeKey === "ocean" ? "'Inter', 'Segoe UI', Arial, sans-serif" : undefined,
+            fontWeight: themeKey === "ocean" ? 700 : undefined
+          }}
+        >
           Motivação do dia
         </span>
       </div>
@@ -178,9 +220,11 @@ export default function MotivationalCard() {
         onMouseLeave={() => setShine(false)}
         style={{
           color: colors.text,
-          textShadow: "none",
+          textShadow: themeKey === "ocean" ? "none" : undefined,
           letterSpacing: themeKey === "ocean" ? "0.01em" : undefined,
-          fontFamily: themeKey === "ocean" ? "monospace, 'Inter', sans-serif" : undefined
+          fontFamily: themeKey === "ocean" ? "'Inter', 'Segoe UI', Arial, sans-serif" : undefined,
+          fontWeight: themeKey === "ocean" ? 500 : undefined,
+          marginBottom: themeKey === "ocean" ? "0.5rem" : undefined
         }}
       >
         {splitWithSpaces(phrase).map((char, idx) => (
@@ -200,15 +244,31 @@ export default function MotivationalCard() {
           </span>
         ))}
       </span>
-      <div className="flex gap-2 mt-4">
+      <div
+        className="flex gap-2 mt-4"
+        style={
+          themeKey === "ocean"
+            ? {
+                width: "100%",
+                justifyContent: "flex-end",
+                marginTop: "1.2rem"
+              }
+            : undefined
+        }
+      >
         <button
           onClick={handleChangePhrase}
-          className="flex items-center justify-center p-2 rounded-md transition text-white"
+          className="flex items-center justify-center p-2 rounded-md transition"
           title="Nova frase"
           style={{
             background: colors.button1,
             color: colors.button1Text,
-            border: "none"
+            border: "none",
+            boxShadow: themeKey === "ocean" ? "none" : undefined,
+            fontWeight: 600,
+            fontFamily: themeKey === "ocean" ? "'Inter', 'Segoe UI', Arial, sans-serif" : undefined,
+            outline: themeKey === "ocean" ? "1.5px solid #B6E6F5" : undefined,
+            transition: "background 0.2s"
           }}
           onMouseOver={e => (e.currentTarget.style.background = colors.button1Hover)}
           onMouseOut={e => (e.currentTarget.style.background = colors.button1)}
@@ -222,7 +282,12 @@ export default function MotivationalCard() {
           style={{
             background: colors.button2,
             color: colors.button2Text,
-            border: "none"
+            border: "none",
+            boxShadow: themeKey === "ocean" ? "none" : undefined,
+            fontWeight: 600,
+            fontFamily: themeKey === "ocean" ? "'Inter', 'Segoe UI', Arial, sans-serif" : undefined,
+            outline: themeKey === "ocean" ? "1.5px solid #B6E6F5" : undefined,
+            transition: "background 0.2s"
           }}
           onMouseOver={e => (e.currentTarget.style.background = colors.button2Hover)}
           onMouseOut={e => (e.currentTarget.style.background = colors.button2)}
@@ -234,7 +299,9 @@ export default function MotivationalCard() {
               style={{
                 background: colors.tooltipBg,
                 color: colors.tooltipText,
-                border: "none"
+                border: "none",
+                boxShadow: themeKey === "ocean" ? "none" : undefined,
+                fontFamily: themeKey === "ocean" ? "'Inter', 'Segoe UI', Arial, sans-serif" : undefined
               }}
             >
               Copiado!

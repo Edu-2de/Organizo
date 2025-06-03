@@ -67,7 +67,7 @@ export default function CalendarWeek({
     ocean: {
       cardBg: "#E0F4FB",
       cardShadow: "0 6px 32px #247BA033",
-      cardBorder: "2.5px solid #97C1A9",
+      cardBorder: "2.5px solid #247ba0",
       month: "#247BA0",
       link: "#247BA0",
       todayBg: "#97C1A933",

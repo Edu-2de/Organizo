@@ -407,20 +407,42 @@ export default function DashboardContent() {
                 percentage={tasks.length === 0 ? 0 : Math.round(tasks.filter(t => t.done).length / tasks.length * 100)}
                 size={60}
                 stroke={7}
-                color={theme.gold}
+                {...(isClassic ? { color: theme.gold } : {})}
                 bg={theme.beige}
               >
                 <span className="text-base sm:text-lg font-bold"
-                  style={{ color: theme.gold, transition: "color 0.3s" }}>
+                  style={{ color: isClassic ? theme.gold : undefined, transition: "color 0.3s" }}>
                   {tasks.length === 0 ? 0 : Math.round(tasks.filter(t => t.done).length / tasks.length * 100)}%
                 </span>
               </CircularProgressBar>
             </div>
             <div className="flex gap-2 sm:gap-4 text-xs sm:text-base font-semibold mb-2">
-              <span style={{ color: theme.olive, transition: "color 0.3s" }}>
+              <span
+                style={{
+                  color: isClassic
+                    ? theme.olive
+                    : themeCtx?.themeKey === "sunset"
+                      ? "#A4508B"
+                      : themeCtx?.themeKey === "ocean"
+                        ? "#247BA0"
+                        : theme.olive,
+                  transition: "color 0.3s"
+                }}
+              >
                 {tasks.filter(t => t.done).length} concluídas
               </span>
-              <span style={{ color: theme.gold, transition: "color 0.3s" }}>
+              <span
+                style={{
+                  color: isClassic
+                    ? theme.gold
+                    : themeCtx?.themeKey === "sunset"
+                      ? "#F76D77"
+                      : themeCtx?.themeKey === "ocean"
+                        ? "#97C1A9"
+                        : theme.gold,
+                  transition: "color 0.3s"
+                }}
+              >
                 {tasks.length - tasks.filter(t => t.done).length} pendente{tasks.length - tasks.filter(t => t.done).length !== 1 ? "s" : ""}
               </span>
             </div>
