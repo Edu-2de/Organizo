@@ -1,24 +1,24 @@
 # Organizo
 
-Organizo é um aplicativo web para organização pessoal, focado em produtividade, tarefas, calendário e motivação diária. O projeto foi desenvolvido com React (Next.js), TypeScript e TailwindCSS, com uma interface moderna, responsiva e personalizável por temas.
+Organizo is a web application for personal organization, focused on productivity, tasks, calendar, and daily motivation. The project was developed with React (Next.js), TypeScript, and TailwindCSS, featuring a modern, responsive, and theme-customizable interface.
 
-## Funcionalidades
+## Features
 
-- **Lista de Tarefas:** Crie, edite, conclua e organize tarefas e subtarefas.
-- **Calendário Semanal:** Visualize sua semana, veja compromissos e eventos com destaque para o dia atual e eventos marcados.
-- **Temas Personalizados:** Escolha entre temas como Classic, Sunset e Ocean, cada um com visual e cores únicos.
-- **Gráfico de Produtividade:** Acompanhe seu desempenho nos últimos 7 dias de forma visual e interativa.
-- **Cartão Motivacional:** Receba frases motivacionais diárias, com opção de copiar e trocar a frase.
-- **Acessibilidade:** Interface acessível, com navegação por teclado e contraste ajustado por tema.
+- **Task List:** Create, edit, complete, and organize tasks and subtasks.
+- **Weekly Calendar:** View your week, see appointments and events with highlights for the current day and marked events.
+- **Custom Themes:** Choose between themes like Classic, Sunset, and Ocean, each with unique visuals and colors.
+- **Productivity Chart:** Track your performance over the last 7 days in a visual and interactive way.
+- **Motivational Card:** Receive daily motivational quotes, with options to copy or change the phrase.
+- **Accessibility:** Accessible interface, with keyboard navigation and theme-adjusted contrast.
 
-## Tecnologias Utilizadas
+## Technologies Used
 
 - **Frontend:** React, Next.js, TypeScript
-- **Estilização:** TailwindCSS, CSS Modules
-- **Ícones:** Heroicons
-- **Gerenciamento de Tema:** Context API
+- **Styling:** TailwindCSS, CSS Modules
+- **Icons:** Heroicons
+- **Theme Management:** Context API
 
-## Estrutura do Projeto
+## Project Structure
 
 ```
 frontend/
@@ -35,41 +35,39 @@ frontend/
   └── ...
 ```
 
-## Como rodar o projeto
+## How to run the project
 
-1. **Clone o repositório:**
+1. **Clone the repository:**
    ```bash
-   git clone https://github.com/seu-usuario/organizo.git
+   git clone https://github.com/your-username/organizo.git
    cd organizo/frontend
    ```
 
-2. **Instale as dependências:**
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-3. **Inicie o servidor de desenvolvimento:**
+3. **Start the development server:**
    ```bash
    npm run dev
    ```
 
-4. **Acesse em:**  
+4. **Access at:**  
    [http://localhost:3000](http://localhost:3000)
 
-## Personalização de Temas
+## Theme Customization
 
-- Acesse as configurações de tema no menu do app.
-- Os temas alteram não só as cores, mas também o visual dos cards, botões e elementos do calendário.
+- Access the theme settings in the app menu.
+- Themes change not only the colors, but also the look of cards, buttons, and calendar elements.
 
-## Contribuição
+## Contribution
 
-Contribuições são bem-vindas!  
-Abra uma issue ou envie um pull request.
+Contributions are welcome!  
+Open an issue or submit a pull request.
 
-## Licença
+## License
 
-Este projeto está sob a licença MIT.
+This project is licensed under the MIT License.
 
 ---
-
-Feito com 💙 por [Seu Nome ou Equipe]
