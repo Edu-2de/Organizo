@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useMemo, useState } from "react";
 import { LogoOrganizo } from "./LogoOrganizo";
 import { useTheme } from "@/components/ThemeContext";
@@ -48,7 +49,6 @@ function getIcons(themeKey: string) {
     };
   }
   if (themeKey === "ocean") {
-    // Ocean: mais clean, mais contraste, mais "fresh"
     return {
       home: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
@@ -129,11 +129,33 @@ function getIcons(themeKey: string) {
   };
 }
 
+// Menu com função de match para cada item
 const menuItems = [
-  { key: "home", label: "Início", href: "/dashboard?tab=home" },
-  { key: "tasks", label: "Tarefas", href: "/dashboard?tab=tasks" },
-  { key: "calendar", label: "Agenda", href: "/dashboard?tab=calendar" },
-  { key: "settings", label: "Configurações", href: "/dashboard/configuracoes" },
+  {
+    key: "home",
+    label: "Início",
+    href: "/dashboard",
+    match: (pathname: string, tab: string | null) =>
+      (pathname === "/dashboard" && (!tab || tab === "home")) || (tab === "home"),
+  },
+  {
+    key: "tasks",
+    label: "Tarefas",
+    href: "/dashboard/tasks",
+    match: (_: string, tab: string | null) => tab === "tasks",
+  },
+  {
+    key: "calendar",
+    label: "Agenda",
+    href: "/dashboard?tab=calendar",
+    match: (_: string, tab: string | null) => tab === "calendar",
+  },
+  {
+    key: "settings",
+    label: "Configurações",
+    href: "/dashboard/configuracoes",
+    match: (pathname: string) => pathname === "/dashboard/configuracoes",
+  },
 ];
 
 function OnlyOLogo({ color = "#E9C46A" }: { color?: string }) {
@@ -161,8 +183,9 @@ interface SidebarProps {
 
 export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const activeTab = useMemo(() => searchParams?.get("tab") || "home", [searchParams]);
+  const tab = searchParams?.get("tab");
   const [logoutAnim, setLogoutAnim] = useState(false);
 
   // Tema
@@ -201,7 +224,6 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       logoutHover: "#F76D7711",
     },
     ocean: {
-      // Ocean: mais clean, mais contraste, mais "fresh"
       bg: "#F7FEFF",
       border: "#B6E6F5",
       shadow: "0 4px 24px #B6E6F522",
@@ -226,7 +248,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       setLogoutAnim(false);
       localStorage.removeItem("token");
       router.replace("/login");
-    }, 1100); // tempo da animação
+    }, 1100);
   }
 
   return (
@@ -275,7 +297,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       {/* Menu */}
       <nav className={`flex flex-col gap-1 ${collapsed ? "items-center" : ""}`}>
         {menuItems.map((item) => {
-          const isActive = activeTab === item.key;
+          const isActive = item.match(pathname, tab);
           return (
             <button
               key={item.key}
@@ -284,7 +306,6 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                 transition-all duration-200 font-medium text-base w-full relative
                 outline-none
                 focus:ring-2
-                ${isActive ? "" : ""}
                 ${themeKey === "sunset" ? "hover:scale-[1.03]" : ""}
                 ${themeKey === "ocean" ? "hover:scale-[1.05] border border-[#B6E6F5]" : ""}
               `}
