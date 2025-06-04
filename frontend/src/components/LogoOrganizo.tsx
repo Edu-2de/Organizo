@@ -6,7 +6,8 @@ const WORD = "Organizo";
 const ANIMATION_INTERVAL = 115;
 const FINAL_HOLD = 1000;
 
-export function LogoOrganizo() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function LogoOrganizo({ color = "#E9C46A" }: { color?: string }) {
   const [highlight, setHighlight] = useState<number | "final">(0);
   const [animating, setAnimating] = useState(false);
   const animatingRef = useRef(false);

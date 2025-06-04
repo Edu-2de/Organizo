@@ -17,8 +17,13 @@ export default function Card({ children, className = "", style, ...rest }: CardP
   const cardStyle: React.CSSProperties = {
     borderRadius: 18,
     background: isClassic ? "#fff" : theme.beige,
-    boxShadow: isClassic ? "0 2px 8px #e9c46a33" : `0 2px 12px ${theme.accent}33`,
-    border: isClassic ? "1px solid #e2e3e7" : `2px solid ${theme.accent}`,
+    boxShadow: isClassic
+      ? "0 2px 8px #e9c46a33"
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      : `0 2px 12px ${(theme as any).accent ?? "#e9c46a"}33`,
+    border: isClassic
+      ? "1px solid #e2e3e7"
+      : `2px solid ${"accent" in theme ? theme.accent : "#e9c46a"}`,
     ...style,
   };
 

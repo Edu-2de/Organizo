@@ -48,22 +48,23 @@ function getIcons(themeKey: string) {
     };
   }
   if (themeKey === "ocean") {
+    // Ocean: mais clean, mais contraste, mais "fresh"
     return {
       home: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path d="M3 11.5L12 4l9 7.5" stroke="#247BA0" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-          <rect x="6" y="13" width="12" height="7" rx="2" fill="#B6E6F5" stroke="#247BA0" strokeWidth="2" />
+          <rect x="6" y="13" width="12" height="7" rx="2" fill="#E0FBFC" stroke="#247BA0" strokeWidth="2" />
         </svg>
       ),
       tasks: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-          <rect x="4" y="4" width="16" height="16" rx="4" fill="#97C1A9" />
+          <rect x="4" y="4" width="16" height="16" rx="4" fill="#B6E6F5" />
           <path d="M8 12l3 3 5-5" stroke="#247BA0" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ),
       calendar: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="5" width="18" height="16" rx="3" stroke="#247BA0" strokeWidth="2.2" fill="#E0FBFC"/>
+          <rect x="3" y="5" width="18" height="16" rx="3" stroke="#247BA0" strokeWidth="2.2" fill="#fff"/>
           <path d="M16 3v4M8 3v4" stroke="#247BA0" strokeWidth="2.2" strokeLinecap="round" />
         </svg>
       ),
@@ -77,7 +78,7 @@ function getIcons(themeKey: string) {
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
           <path d="M16 17l5-5-5-5" stroke="#247BA0" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
           <path d="M21 12H9" stroke="#247BA0" strokeWidth="2.2" strokeLinecap="round"/>
-          <rect x="3" y="4" width="8" height="16" rx="2" fill="#B6E6F5" stroke="#247BA0" strokeWidth="2"/>
+          <rect x="3" y="4" width="8" height="16" rx="2" fill="#E0FBFC" stroke="#247BA0" strokeWidth="2"/>
         </svg>
       ),
       chevron: (
@@ -200,18 +201,19 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       logoutHover: "#F76D7711",
     },
     ocean: {
-      bg: "#E0FBFC",
-      border: "#97C1A9",
-      shadow: "0 2px 12px #247BA022",
+      // Ocean: mais clean, mais contraste, mais "fresh"
+      bg: "#F7FEFF",
+      border: "#B6E6F5",
+      shadow: "0 4px 24px #B6E6F522",
       logo: "#247BA0",
-      menuActive: "#B6E6F533",
-      menuHover: "#97C1A922",
-      menuText: "#155263",
-      menuActiveText: "#247BA0",
-      chevron: "#97C1A9",
+      menuActive: "#B6E6F5",
+      menuHover: "#E0FBFC",
+      menuText: "#247BA0",
+      menuActiveText: "#155263",
+      chevron: "#247BA0",
       logout: "#247BA0",
-      logoutBg: "#B6E6F5",
-      logoutHover: "#97C1A911",
+      logoutBg: "#E0FBFC",
+      logoutHover: "#B6E6F555",
     }
   };
 
@@ -237,7 +239,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         ${collapsed ? "w-20 min-w-[5rem] max-w-[5rem]" : "w-72 min-w-[16rem] max-w-[18rem]"}
         hidden md:flex
         ${themeKey === "sunset" ? "border-[#FFD452]" : ""}
-        ${themeKey === "ocean" ? "border-[#97C1A9]" : ""}
+        ${themeKey === "ocean" ? "border-[#B6E6F5]" : ""}
       `}
       style={{
         background: style.bg,
@@ -253,7 +255,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           active:scale-90
           ${themeKey === "classic" ? "bg-white border-[#e2e3e7] shadow" : ""}
           ${themeKey === "sunset" ? "bg-[#FFD452] border-[#FFD452] shadow-md" : ""}
-          ${themeKey === "ocean" ? "bg-[#B6E6F5] border-[#97C1A9] shadow-md" : ""}
+          ${themeKey === "ocean" ? "bg-[#E0FBFC] border-[#B6E6F5] shadow-md" : ""}
         `}
         style={{
           transform: collapsed ? "rotate(180deg)" : "none",
@@ -284,14 +286,15 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                 focus:ring-2
                 ${isActive ? "" : ""}
                 ${themeKey === "sunset" ? "hover:scale-[1.03]" : ""}
-                ${themeKey === "ocean" ? "hover:scale-[1.04]" : ""}
+                ${themeKey === "ocean" ? "hover:scale-[1.05] border border-[#B6E6F5]" : ""}
               `}
               style={{
                 background: isActive ? style.menuActive : "transparent",
                 color: isActive ? style.menuActiveText : style.menuText,
                 fontWeight: isActive ? 700 : 500,
-                boxShadow: isActive ? (themeKey === "ocean" ? "0 2px 8px #B6E6F533" : "") : "",
-                border: themeKey === "ocean" && isActive ? "1.5px solid #97C1A9" : undefined,
+                boxShadow: isActive && themeKey === "ocean" ? "0 2px 12px #B6E6F555" : "",
+                border: themeKey === "ocean" && isActive ? "2px solid #247BA0" : undefined,
+                outline: themeKey === "ocean" && isActive ? "2px solid #97C1A9" : undefined,
               }}
               onClick={() => router.push(item.href)}
               tabIndex={0}
