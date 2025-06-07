@@ -1,332 +1,223 @@
 "use client";
-
-import { useEffect, useState, FormEvent, useRef } from "react";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
-import TaskList from "@/components/TaskList";
-import { fetchTasks, createTask, deleteTask, toggleTask } from "@/api/taskApi";
+import { getTarefas, atualizarTarefa, deletarTarefa } from "@/api/taskApi";
+import { CheckCircleIcon, ArrowUturnLeftIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 
-type Task = {
+type Tarefa = {
   id: string;
   titulo: string;
-  descricao?: string;
-  prioridade?: string;
+  descricao: string;
+  prioridade: string;
+  concluida: boolean;
   data_limite?: string;
   categoria?: string;
-  responsavel?: string;
-  anexo?: string;
-  tags?: string[];
-  lembrete?: string;
-  recorrente?: boolean;
-  recorrencia?: string;
-  concluida: boolean;
 };
 
-const prioridadeOptions = [
-  { value: "baixa", label: "Baixa" },
-  { value: "media", label: "Média" },
-  { value: "alta", label: "Alta" },
-];
-
-const recorrenciaOptions = [
-  { value: "", label: "Nenhuma" },
-  { value: "diaria", label: "Diária" },
-  { value: "semanal", label: "Semanal" },
-  { value: "mensal", label: "Mensal" },
-  { value: "anual", label: "Anual" },
-];
+const prioridadeBadge = (prioridade: string) => {
+  switch (prioridade) {
+    case "alta":
+      return "bg-[#E9C46A] text-[#264653] border-[#E9C46A]";
+    case "media":
+      return "bg-[#A9C5A0] text-[#264653] border-[#A9C5A0]";
+    default:
+      return "bg-[#F6F5F2] text-[#264653] border-[#F6F5F2]";
+  }
+};
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [inputTitulo, setInputTitulo] = useState("");
-  const [inputDescricao, setInputDescricao] = useState("");
-  const [inputPrioridade, setInputPrioridade] = useState("media");
-  const [inputDataLimite, setInputDataLimite] = useState("");
-  const [inputCategoria, setInputCategoria] = useState("");
-  const [inputResponsavel, setInputResponsavel] = useState("");
-  const [inputTags, setInputTags] = useState<string[]>([]);
-  const [inputTagText, setInputTagText] = useState("");
-  const [inputLembrete, setInputLembrete] = useState("");
-  const [inputRecorrente, setInputRecorrente] = useState(false);
-  const [inputRecorrencia, setInputRecorrencia] = useState("");
-  const [inputAnexo, setInputAnexo] = useState<File | null>(null);
-  const [collapsed, setCollapsed] = useState(false);
-  const [erro, setErro] = useState("");
-  const tagInputRef = useRef<HTMLInputElement>(null);
+  const [tarefas, setTarefas] = useState<Tarefa[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showPendentes, setShowPendentes] = useState(true);
+  const [showConcluidas, setShowConcluidas] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token") || "";
-    fetchTasks(token).then(setTasks);
+    getTarefas()
+      .then(setTarefas)
+      .catch(() => setTarefas([]))
+      .finally(() => setLoading(false));
   }, []);
 
-  function handleTagAdd() {
-    if (inputTagText.trim() && !inputTags.includes(inputTagText.trim())) {
-      setInputTags([...inputTags, inputTagText.trim()]);
-      setInputTagText("");
-      setTimeout(() => tagInputRef.current?.focus(), 100);
-    }
-  }
+  const handleAtualizarTarefa = async (id: string, data: Partial<Tarefa>) => {
+    await atualizarTarefa(id, data);
+    setTarefas((tarefas) =>
+      tarefas.map((t) => (t.id === id ? { ...t, ...data } : t))
+    );
+  };
 
-  function handleTagRemove(tag: string) {
-    setInputTags(inputTags.filter(t => t !== tag));
-  }
-
-  async function handleAddTask(e: FormEvent) {
-    e.preventDefault();
-    setErro("");
-    if (!inputTitulo.trim()) {
-      setErro("O título é obrigatório.");
-      return;
-    }
-    const token = localStorage.getItem("token") || "";
-
-    let newTask;
-    if (inputAnexo) {
-      const formData = new FormData();
-      formData.append("titulo", inputTitulo);
-      formData.append("descricao", inputDescricao);
-      formData.append("prioridade", inputPrioridade);
-      if (inputDataLimite) formData.append("data_limite", inputDataLimite);
-      if (inputCategoria) formData.append("categoria", inputCategoria);
-      if (inputResponsavel) formData.append("responsavel", inputResponsavel);
-      if (inputLembrete) formData.append("lembrete", inputLembrete);
-      formData.append("recorrente", inputRecorrente ? "true" : "false");
-      if (inputRecorrencia) formData.append("recorrencia", inputRecorrencia);
-      formData.append("anexo", inputAnexo);
-      inputTags.forEach(tag => formData.append("tags", tag));
-      newTask = await createTask(token, formData, true);
-    } else {
-      newTask = await createTask(token, {
-        titulo: inputTitulo,
-        descricao: inputDescricao,
-        prioridade: inputPrioridade,
-        data_limite: inputDataLimite ? inputDataLimite : undefined,
-        categoria: inputCategoria,
-        responsavel: inputResponsavel,
-        tags: inputTags,
-        lembrete: inputLembrete,
-        recorrente: inputRecorrente,
-        recorrencia: inputRecorrencia,
-      });
-    }
-    setTasks((prev) => [newTask, ...prev]);
-    setInputTitulo("");
-    setInputDescricao("");
-    setInputPrioridade("media");
-    setInputDataLimite("");
-    setInputCategoria("");
-    setInputResponsavel("");
-    setInputTags([]);
-    setInputLembrete("");
-    setInputRecorrente(false);
-    setInputRecorrencia("");
-    setInputAnexo(null);
-  }
-
-  async function handleRemoveTask(id: string) {
-    const token = localStorage.getItem("token") || "";
-    await deleteTask(token, id);
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-  }
-
-  async function handleToggleTask(id: string) {
-    const token = localStorage.getItem("token") || "";
-    const task = tasks.find((t) => t.id === id);
-    if (!task) return;
-    const updated = await toggleTask(token, id, !task.concluida);
-    setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
-  }
+  const handleDeletarTarefa = async (id: string) => {
+    await deletarTarefa(id);
+    setTarefas((tarefas) => tarefas.filter((t) => t.id !== id));
+  };
 
   return (
-    <div className="flex min-h-screen bg-white">
-      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
-      <main className="flex-1 flex flex-col items-center px-2 py-6 md:px-8 md:py-10 bg-white">
-        <div className="w-full max-w-2xl">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-blue-900">
-              Tarefas
-            </h1>
-            <span className="text-sm text-gray-500 font-medium">
-              {new Date().toLocaleDateString("pt-BR", { weekday: "long", month: "long", day: "numeric" })}
-            </span>
-          </div>
-          {/* Card do formulário */}
-          <form
-            className="mb-10 bg-white shadow-lg rounded-2xl p-4 md:p-8 flex flex-col gap-6 border border-gray-100"
-            onSubmit={handleAddTask}
-            autoComplete="off"
-          >
-            {/* Título e Prioridade */}
-            <div className="flex flex-col md:flex-row gap-4">
-              <input
-                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition placeholder-gray-400 text-base shadow-sm"
-                placeholder="Título da tarefa *"
-                value={inputTitulo}
-                onChange={e => setInputTitulo(e.target.value)}
-                required
-                maxLength={200}
-                autoFocus
-              />
-              <select
-                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 w-full md:w-44 transition text-base shadow-sm"
-                value={inputPrioridade}
-                onChange={e => setInputPrioridade(e.target.value)}
-              >
-                {prioridadeOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            {/* Descrição */}
-            <textarea
-              className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 resize-none transition placeholder-gray-400 text-base shadow-sm"
-              placeholder="Descrição (opcional)"
-              value={inputDescricao}
-              onChange={e => setInputDescricao(e.target.value)}
-              rows={2}
-              maxLength={500}
-            />
-            {/* Data, Categoria, Responsável */}
-            <div className="flex flex-col md:flex-row gap-4">
-              <input
-                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition placeholder-gray-400 shadow-sm"
-                type="date"
-                value={inputDataLimite}
-                onChange={e => setInputDataLimite(e.target.value)}
-                placeholder="Data limite"
-              />
-              <input
-                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition placeholder-gray-400 shadow-sm"
-                placeholder="Categoria"
-                value={inputCategoria}
-                onChange={e => setInputCategoria(e.target.value)}
-                maxLength={100}
-              />
-              <input
-                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition placeholder-gray-400 shadow-sm"
-                placeholder="Responsável (email ou nome)"
-                value={inputResponsavel}
-                onChange={e => setInputResponsavel(e.target.value)}
-              />
-            </div>
-            {/* Tags */}
-            <div className="flex flex-col gap-2">
-              <div className="flex gap-2">
-                <input
-                  ref={tagInputRef}
-                  className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 transition placeholder-gray-400 shadow-sm"
-                  placeholder="Adicionar tag"
-                  value={inputTagText}
-                  onChange={e => setInputTagText(e.target.value)}
-                  maxLength={50}
-                  onKeyDown={e => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleTagAdd();
-                    }
-                  }}
-                />
-                <button
-                  type="button"
-                  className="bg-blue-50 text-blue-700 px-4 py-3 rounded-lg font-bold hover:bg-blue-100 transition active:scale-95 shadow"
-                  title="Adicionar tag"
-                  onClick={handleTagAdd}
-                >
-                  <span className="text-xl">+</span>
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {inputTags.map(tag => (
-                  <span
-                    key={tag}
-                    className="bg-blue-50 border border-blue-200 text-blue-700 px-3 py-1 rounded-lg flex items-center gap-1 text-sm animate-fade-in shadow-sm"
-                  >
-                    {tag}
-                    <button
-                      type="button"
-                      className="ml-1 text-xs text-red-500 hover:text-red-700 font-bold"
-                      onClick={() => handleTagRemove(tag)}
-                      title="Remover tag"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-              </div>
-            </div>
-            {/* Lembrete, Recorrência, Anexo */}
-            <div className="flex flex-col md:flex-row gap-4">
-              <input
-                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition placeholder-gray-400 shadow-sm"
-                type="datetime-local"
-                value={inputLembrete}
-                onChange={e => setInputLembrete(e.target.value)}
-                placeholder="Lembrete"
-              />
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={inputRecorrente}
-                  onChange={e => setInputRecorrente(e.target.checked)}
-                  className="accent-blue-600 scale-125"
-                />
-                <span className="text-gray-700 font-medium">Recorrente</span>
-              </label>
-              <select
-                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 w-full md:w-44 transition shadow-sm"
-                value={inputRecorrencia}
-                onChange={e => setInputRecorrencia(e.target.value)}
-                disabled={!inputRecorrente}
-              >
-                {recorrenciaOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-              <input
-                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition shadow-sm"
-                type="file"
-                onChange={e => setInputAnexo(e.target.files?.[0] || null)}
-              />
-            </div>
-            {/* Botão de ação */}
-            <div className="flex justify-end">
+    <div className="flex min-h-screen" style={{ background: "#F6F5F2" }}>
+      <Sidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
+      <main className={`flex-1 px-2 md:px-8 py-8 transition-all duration-300 ${sidebarCollapsed ? "ml-20" : "ml-72"}`}>
+        <div className="flex items-center justify-between mb-10">
+          <h1 className="text-3xl font-bold" style={{ color: "#264653" }}>
+            Quadro de Tarefas
+            <span className="ml-2"><PlusIcon className="w-7 h-7 text-[#A9C5A0]" /></span>
+          </h1>
+          <Link href="/dashboard/tasks/nova">
+            <button
+              className="px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 transition"
+              style={{
+                background: "#264653",
+                color: "#F6F5F2",
+              }}
+            >
+              <PlusIcon className="w-5 h-5" />
+              Nova Tarefa
+            </button>
+          </Link>
+        </div>
+        <div className="flex flex-col md:flex-row gap-8 justify-center">
+          {/* Pendentes */}
+          <section className="flex-1 min-w-[320px]">
+            <div
+              className="rounded-xl shadow border p-6 flex flex-col h-full"
+              style={{ background: "#fff", borderColor: "#A9C5A0" }}
+            >
               <button
-                type="submit"
-                className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow hover:bg-blue-700 transition active:scale-95 flex items-center gap-2 group"
+                className="flex items-center justify-between w-full mb-4 text-base font-semibold transition"
+                style={{ color: "#264653" }}
+                onClick={() => setShowPendentes((v) => !v)}
+                aria-expanded={showPendentes}
               >
-                <span className="inline-block text-xl transition-transform group-hover:scale-125">+</span>
-                Adicionar Tarefa
+                <span>Pendentes</span>
+                <span className={`ml-2 transition-transform ${showPendentes ? "rotate-180" : ""}`}>▼</span>
               </button>
+              <div className={`flex flex-col gap-5 flex-1 transition-all duration-300 ${showPendentes ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0 overflow-hidden"}`}>
+                {loading && <div className="text-gray-400 text-center">Carregando tarefas...</div>}
+                {tarefas.filter(t => !t.concluida).length === 0 && !loading && (
+                  <div className="text-gray-400 text-center">Nenhuma tarefa pendente.</div>
+                )}
+                {tarefas.filter(t => !t.concluida).map((t) => (
+                  <div
+                    key={t.id}
+                    className="group border rounded-lg p-4 shadow-sm flex flex-col gap-2 hover:shadow-md transition relative"
+                    style={{ background: "#fff", borderColor: "#F6F5F2" }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-lg flex items-center gap-2" style={{ color: "#264653" }}>
+                        <span className="inline-block w-2 h-2 rounded-full" style={{ background: "#A9C5A0" }} />
+                        {t.titulo}
+                      </h3>
+                      <span className={`text-xs px-2 py-1 rounded border font-semibold uppercase tracking-wide ${prioridadeBadge(t.prioridade)}`}>
+                        {t.prioridade}
+                      </span>
+                    </div>
+                    <p className="text-gray-600">{t.descricao}</p>
+                    <div className="flex flex-wrap gap-3 text-xs mt-1" style={{ color: "#264653" }}>
+                      {t.categoria && <span className="bg-[#A9C5A0] text-[#264653] rounded px-2 py-0.5">{t.categoria}</span>}
+                      <span className="bg-[#F6F5F2] rounded px-2 py-0.5">
+                        {t.data_limite ? `Limite: ${new Date(t.data_limite).toLocaleString()}` : "Sem data limite"}
+                      </span>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        className="px-3 py-1 rounded border font-medium flex items-center gap-1 transition"
+                        style={{
+                          background: "#F6F5F2",
+                          color: "#264653",
+                          borderColor: "#A9C5A0",
+                        }}
+                        onClick={() => handleAtualizarTarefa(t.id, { concluida: true })}
+                      >
+                        <CheckCircleIcon className="w-5 h-5" /> Concluir
+                      </button>
+                      <button
+                        className="px-3 py-1 rounded border font-medium flex items-center gap-1 transition"
+                        style={{
+                          background: "#F6F5F2",
+                          color: "#264653",
+                          borderColor: "#E9C46A",
+                        }}
+                        onClick={() => handleDeletarTarefa(t.id)}
+                      >
+                        <TrashIcon className="w-5 h-5" /> Deletar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            {erro && <span className="text-red-600 text-base font-medium">{erro}</span>}
-          </form>
-          {/* Lista de tarefas */}
-          <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-2 md:p-4">
-            <TaskList
-              tasks={tasks}
-              onRemove={handleRemoveTask}
-              onToggle={handleToggleTask}
-              onAdd={handleAddTask}
-              inputValue={inputTitulo}
-              setInputValue={setInputTitulo}
-              onAddSubtask={() => {}}
-              onToggleSubtask={() => {}}
-              onRemoveSubtask={() => {}}
-              subtaskInputs={{}}
-              setSubtaskInputs={() => {}}
-            />
-          </div>
+          </section>
+          {/* Concluídas */}
+          <section className="flex-1 min-w-[320px]">
+            <div
+              className="rounded-xl shadow border p-6 flex flex-col h-full"
+              style={{ background: "#fff", borderColor: "#E9C46A" }}
+            >
+              <button
+                className="flex items-center justify-between w-full mb-4 text-base font-semibold transition"
+                style={{ color: "#264653" }}
+                onClick={() => setShowConcluidas((v) => !v)}
+                aria-expanded={showConcluidas}
+              >
+                <span>Concluídas</span>
+                <span className={`ml-2 transition-transform ${showConcluidas ? "rotate-180" : ""}`}>▼</span>
+              </button>
+              <div className={`flex flex-col gap-5 flex-1 transition-all duration-300 ${showConcluidas ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0 overflow-hidden"}`}>
+                {tarefas.filter(t => t.concluida).length === 0 && !loading && (
+                  <div className="text-gray-400 text-center">Nenhuma tarefa concluída.</div>
+                )}
+                {tarefas.filter(t => t.concluida).map((t) => (
+                  <div
+                    key={t.id}
+                    className="group border rounded-lg p-4 shadow-sm flex flex-col gap-2 opacity-80 hover:shadow-md transition relative"
+                    style={{ background: "#F6F5F2", borderColor: "#E9C46A" }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-lg line-through flex items-center gap-2" style={{ color: "#264653" }}>
+                        <CheckCircleIcon className="w-5 h-5 text-[#A9C5A0]" />
+                        {t.titulo}
+                      </h3>
+                      <span className={`text-xs px-2 py-1 rounded border font-semibold uppercase tracking-wide ${prioridadeBadge(t.prioridade)}`}>
+                        {t.prioridade}
+                      </span>
+                    </div>
+                    <p className="text-gray-600">{t.descricao}</p>
+                    <div className="flex flex-wrap gap-3 text-xs mt-1" style={{ color: "#264653" }}>
+                      {t.categoria && <span className="bg-[#A9C5A0] text-[#264653] rounded px-2 py-0.5">{t.categoria}</span>}
+                      <span className="bg-[#F6F5F2] rounded px-2 py-0.5">
+                        {t.data_limite ? `Limite: ${new Date(t.data_limite).toLocaleString()}` : "Sem data limite"}
+                      </span>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        className="px-3 py-1 rounded border font-medium flex items-center gap-1 transition"
+                        style={{
+                          background: "#F6F5F2",
+                          color: "#264653",
+                          borderColor: "#A9C5A0",
+                        }}
+                        onClick={() => handleAtualizarTarefa(t.id, { concluida: false })}
+                      >
+                        <ArrowUturnLeftIcon className="w-5 h-5" /> Voltar ao quadro
+                      </button>
+                      <button
+                        className="px-3 py-1 rounded border font-medium flex items-center gap-1 transition"
+                        style={{
+                          background: "#F6F5F2",
+                          color: "#264653",
+                          borderColor: "#E9C46A",
+                        }}
+                        onClick={() => handleDeletarTarefa(t.id)}
+                      >
+                        <TrashIcon className="w-5 h-5" /> Deletar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
         </div>
       </main>
-      <style jsx global>{`
-        .animate-fade-in {
-          animation: fadeIn 0.3s;
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(8px);}
-          to { opacity: 1; transform: none;}
-        }
-      `}</style>
     </div>
   );
 }

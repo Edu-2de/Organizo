@@ -1,7 +1,9 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import COLORS from "@/components/colors";
 import { useTheme } from "@/components/ThemeContext";
+import { getTarefas, atualizarTarefa } from "@/api/taskApi";
+import Link from "next/link";
 
 const TASK_ICONS = {
   trash: (
@@ -33,7 +35,9 @@ function SubtaskList({
   onToggle,
   onRemove,
   onAdd,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   value,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setValue,
 }: {
   subtasks: SubTaskType[];
@@ -94,7 +98,9 @@ function SubtaskList({
 
   const style = themeStyles[themeKey];
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const inputRef = useRef<HTMLInputElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -103,47 +109,7 @@ function SubtaskList({
   }
   return (
     <div className={`ml-5 sm:ml-8 my-1`}>
-      <form
-        className={`flex gap-2 mb-1 ${themeKey === "ocean" ? "bg-[#E0FBFC] rounded-xl p-2 border border-[#97C1A9]" : ""}`}
-        onSubmit={e => {
-          e.preventDefault();
-          onAdd();
-        }}
-      >
-        <input
-          ref={inputRef}
-          className={`rounded-lg border px-2 py-1 text-xs focus:outline-none transition w-full placeholder:opacity-60 ${themeKey === "ocean" ? "bg-[#F6F8FA] border-[#97C1A9] text-[#155263] font-mono" : ""}`}
-          placeholder="Nova sub-tarefa..."
-          type="text"
-          value={value}
-          maxLength={60}
-          onChange={e => setValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          style={{
-            background: style.inputBg,
-            color: style.inputText,
-            borderColor: style.inputBorder,
-          }}
-        />
-        <button
-          type="submit"
-          className={`flex items-center px-2 py-1 rounded-lg font-bold shadow-sm border transition ${themeKey === "ocean" ? "bg-[#97C1A9] text-[#155263] border-[#97C1A9] hover:bg-[#B6E6F5]" : ""}`}
-          style={{
-            color: style.subtaskActive,
-            borderColor: style.inputBorder,
-            background: themeKey === "ocean" ? "#97C1A9" : "#fff",
-          }}
-          aria-label="Adicionar sub-tarefa"
-          disabled={value.trim().length === 0}
-        >
-          {themeKey === "ocean" ? (
-            <svg width={18} height={18} fill="none" viewBox="0 0 20 20">
-              <circle cx={10} cy={10} r={9} fill="#B6E6F5" />
-              <path d="M10 7v6M7 10h6" stroke="#155263" strokeWidth={2} strokeLinecap="round"/>
-            </svg>
-          ) : TASK_ICONS.plus}
-        </button>
-      </form>
+      {/* Subtasks input removido conforme pedido */}
       <ul className="flex flex-col gap-0.5">
         {subtasks.length === 0 && (
           <li className="text-xs" style={{ color: style.emptyText, opacity: 0.5 }}>Sem sub-tarefas.</li>
@@ -204,8 +170,6 @@ function SubtaskList({
               style={{
                 background: "transparent",
               }}
-              onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = style.subtaskRemoveHover; }}
-              onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
               onClick={() => onRemove(st.id)}
               title="Excluir sub-tarefa"
             >
@@ -225,27 +189,17 @@ function SubtaskList({
 }
 
 export default function TaskList({
-  tasks,
   onRemove,
-  onToggle,
-  onAdd,
-  inputValue,
-  setInputValue,
-  onAddSubtask,
   onToggleSubtask,
   onRemoveSubtask,
+  onAddSubtask,
   subtaskInputs,
   setSubtaskInputs,
 }: {
-  tasks: TaskType[];
   onRemove: (id: number) => void;
-  onToggle: (id: number) => void;
-  onAdd: () => void;
-  inputValue: string;
-  setInputValue: (s: string) => void;
-  onAddSubtask: (taskId: number) => void;
   onToggleSubtask: (taskId: number, subId: number) => void;
   onRemoveSubtask: (taskId: number, subId: number) => void;
+  onAddSubtask: (taskId: number) => void;
   subtaskInputs: { [k: number]: string };
   setSubtaskInputs: (f: (prev: { [k: number]: string }) => { [k: number]: string }) => void;
 }) {
@@ -300,60 +254,52 @@ export default function TaskList({
 
   const style = themeStyles[themeKey];
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  // Buscar as 5 tarefas mais recentes da API
+  const [tasks, setTasks] = useState<TaskType[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      onAdd();
-    }
-  }
+  useEffect(() => {
+    getTarefas()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .then((apiTasks: any[]) => {
+        const sorted = [...apiTasks]
+          .sort((a, b) => {
+            const dateA = new Date(a.created_at || a.data_limite || 0).getTime();
+            const dateB = new Date(b.created_at || b.data_limite || 0).getTime();
+            return dateB - dateA;
+          })
+          .slice(0, 5)
+          .map(t => ({
+            ...t,
+            text: t.titulo || t.text,
+            done: t.concluida ?? t.done,
+            subtasks: t.subtarefas || [],
+          }));
+        setTasks(sorted);
+      })
+      .catch(() => setTasks([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Função para marcar como concluída/não concluída
+  const handleToggle = async (id: number) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    await atualizarTarefa(String(id), { concluida: !task.done });
+    setTasks(tasks =>
+      tasks.map(t =>
+        t.id === id ? { ...t, done: !t.done } : t
+      )
+    );
+  };
 
   return (
     <div>
-      <form
-        className={`flex gap-2 mb-2 ${themeKey === "ocean" ? "bg-[#E0FBFC] rounded-xl p-3 border border-[#97C1A9]" : ""}`}
-        onSubmit={e => {
-          e.preventDefault();
-          onAdd();
-        }}
-      >
-        <input
-          ref={inputRef}
-          className={`flex-1 rounded-lg border px-3 py-2 text-sm focus:outline-none transition placeholder:opacity-60 ${themeKey === "ocean" ? "bg-[#F6F8FA] border-[#97C1A9] text-[#155263] font-mono" : ""}`}
-          placeholder="Nova tarefa..."
-          type="text"
-          value={inputValue}
-          maxLength={80}
-          onChange={e => setInputValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          style={{
-            background: style.inputBg,
-            color: style.inputText,
-            borderColor: style.inputBorder,
-          }}
-        />
-        <button
-          type="submit"
-          className={`flex items-center px-3 py-2 rounded-lg font-bold shadow-sm border transition text-base ${themeKey === "ocean" ? "bg-[#97C1A9] text-[#155263] border-[#97C1A9] hover:bg-[#B6E6F5]" : ""}`}
-          style={{
-            color: style.taskActive,
-            borderColor: style.inputBorder,
-            background: themeKey === "ocean" ? "#97C1A9" : "#fff",
-          }}
-          aria-label="Adicionar tarefa"
-          disabled={inputValue.trim().length === 0}
-        >
-          {themeKey === "ocean" ? (
-            <svg width={18} height={18} fill="none" viewBox="0 0 20 20">
-              <circle cx={10} cy={10} r={9} fill="#B6E6F5" />
-              <path d="M10 7v6M7 10h6" stroke="#155263" strokeWidth={2} strokeLinecap="round"/>
-            </svg>
-          ) : TASK_ICONS.plus}
-        </button>
-      </form>
       <ul className="flex flex-col gap-1">
-        {tasks.length === 0 && (
+        {loading && (
+          <li className="text-center py-8 text-gray-400">Carregando tarefas...</li>
+        )}
+        {!loading && tasks.length === 0 && (
           <li className="text-center py-8" style={{ color: style.emptyText, opacity: 0.6 }}>Sem tarefas.</li>
         )}
         {tasks.map((t) => (
@@ -392,7 +338,7 @@ export default function TaskList({
                     : "0 2px 8px #247BA022",
                 }}
                 aria-label={t.done ? "Desmarcar tarefa" : "Concluir tarefa"}
-                onClick={() => onToggle(t.id)}
+                onClick={() => handleToggle(t.id)}
               >
                 <span className="transition-all duration-200">
                   {t.done ? (
@@ -428,8 +374,6 @@ export default function TaskList({
                 style={{
                   background: "transparent",
                 }}
-                onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = style.taskRemoveHover; }}
-                onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
                 onClick={() => onRemove(t.id)}
                 title="Excluir tarefa"
               >
@@ -454,6 +398,19 @@ export default function TaskList({
           </li>
         ))}
       </ul>
+      <div className="flex justify-center mt-6">
+        <Link
+          href="/dashboard/tasks"
+          className="px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 transition border"
+          style={{
+            background: style.inputBg,
+            color: style.taskText,
+            borderColor: style.taskBorder,
+          }}
+        >
+          Ver mais tarefas
+        </Link>
+      </div>
     </div>
   );
 }
