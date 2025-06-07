@@ -139,20 +139,27 @@ export default function TasksPage() {
   return (
     <div className="flex min-h-screen bg-white">
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
-      <main className="flex-1 flex flex-col items-center px-2 py-6 md:px-8 md:py-10">
-        <div className="w-full max-w-lg">
-          <h1 className="text-3xl font-extrabold mb-8 text-gray-900 text-center tracking-tight">
-            Minhas Tarefas
-          </h1>
+      <main className="flex-1 flex flex-col items-center px-2 py-6 md:px-8 md:py-10 bg-white">
+        <div className="w-full max-w-2xl">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-blue-900">
+              Tarefas
+            </h1>
+            <span className="text-sm text-gray-500 font-medium">
+              {new Date().toLocaleDateString("pt-BR", { weekday: "long", month: "long", day: "numeric" })}
+            </span>
+          </div>
+          {/* Card do formulário */}
           <form
-            className="mb-10 bg-white shadow-sm rounded-xl p-4 md:p-6 flex flex-col gap-5 border border-gray-100"
+            className="mb-10 bg-white shadow-lg rounded-2xl p-4 md:p-8 flex flex-col gap-6 border border-gray-100"
             onSubmit={handleAddTask}
             autoComplete="off"
           >
             {/* Título e Prioridade */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col md:flex-row gap-4">
               <input
-                className="border border-gray-200 focus:border-blue-500 outline-none rounded-lg px-4 py-2 flex-1 transition placeholder-gray-400 text-base"
+                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition placeholder-gray-400 text-base shadow-sm"
                 placeholder="Título da tarefa *"
                 value={inputTitulo}
                 onChange={e => setInputTitulo(e.target.value)}
@@ -161,7 +168,7 @@ export default function TasksPage() {
                 autoFocus
               />
               <select
-                className="border border-gray-200 focus:border-blue-500 outline-none rounded-lg px-4 py-2 w-full sm:w-40 transition text-base"
+                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 w-full md:w-44 transition text-base shadow-sm"
                 value={inputPrioridade}
                 onChange={e => setInputPrioridade(e.target.value)}
               >
@@ -172,7 +179,7 @@ export default function TasksPage() {
             </div>
             {/* Descrição */}
             <textarea
-              className="border border-gray-200 focus:border-blue-500 outline-none rounded-lg px-4 py-2 resize-none transition placeholder-gray-400 text-base"
+              className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 resize-none transition placeholder-gray-400 text-base shadow-sm"
               placeholder="Descrição (opcional)"
               value={inputDescricao}
               onChange={e => setInputDescricao(e.target.value)}
@@ -180,34 +187,34 @@ export default function TasksPage() {
               maxLength={500}
             />
             {/* Data, Categoria, Responsável */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col md:flex-row gap-4">
               <input
-                className="border border-gray-200 focus:border-blue-500 outline-none rounded-lg px-4 py-2 flex-1 transition placeholder-gray-400"
+                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition placeholder-gray-400 shadow-sm"
                 type="date"
                 value={inputDataLimite}
                 onChange={e => setInputDataLimite(e.target.value)}
                 placeholder="Data limite"
               />
               <input
-                className="border border-gray-200 focus:border-blue-500 outline-none rounded-lg px-4 py-2 flex-1 transition placeholder-gray-400"
+                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition placeholder-gray-400 shadow-sm"
                 placeholder="Categoria"
                 value={inputCategoria}
                 onChange={e => setInputCategoria(e.target.value)}
                 maxLength={100}
               />
               <input
-                className="border border-gray-200 focus:border-blue-500 outline-none rounded-lg px-4 py-2 flex-1 transition placeholder-gray-400"
+                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition placeholder-gray-400 shadow-sm"
                 placeholder="Responsável (email ou nome)"
                 value={inputResponsavel}
                 onChange={e => setInputResponsavel(e.target.value)}
               />
             </div>
             {/* Tags */}
-            <div>
+            <div className="flex flex-col gap-2">
               <div className="flex gap-2">
                 <input
                   ref={tagInputRef}
-                  className="border border-gray-200 focus:border-blue-500 outline-none rounded-lg px-4 py-2 transition placeholder-gray-400"
+                  className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 transition placeholder-gray-400 shadow-sm"
                   placeholder="Adicionar tag"
                   value={inputTagText}
                   onChange={e => setInputTagText(e.target.value)}
@@ -221,18 +228,18 @@ export default function TasksPage() {
                 />
                 <button
                   type="button"
-                  className="bg-gray-100 text-blue-700 px-4 py-2 rounded-lg font-bold hover:bg-blue-200 transition active:scale-95"
+                  className="bg-blue-50 text-blue-700 px-4 py-3 rounded-lg font-bold hover:bg-blue-100 transition active:scale-95 shadow"
                   title="Adicionar tag"
                   onClick={handleTagAdd}
                 >
                   <span className="text-xl">+</span>
                 </button>
               </div>
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex flex-wrap gap-2">
                 {inputTags.map(tag => (
                   <span
                     key={tag}
-                    className="bg-blue-50 border border-blue-200 text-blue-700 px-3 py-1 rounded-lg flex items-center gap-1 text-sm animate-fade-in"
+                    className="bg-blue-50 border border-blue-200 text-blue-700 px-3 py-1 rounded-lg flex items-center gap-1 text-sm animate-fade-in shadow-sm"
                   >
                     {tag}
                     <button
@@ -248,25 +255,25 @@ export default function TasksPage() {
               </div>
             </div>
             {/* Lembrete, Recorrência, Anexo */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col md:flex-row gap-4">
               <input
-                className="border border-gray-200 focus:border-blue-500 outline-none rounded-lg px-4 py-2 flex-1 transition placeholder-gray-400"
+                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition placeholder-gray-400 shadow-sm"
                 type="datetime-local"
                 value={inputLembrete}
                 onChange={e => setInputLembrete(e.target.value)}
                 placeholder="Lembrete"
               />
-              <label className="flex items-center gap-2 px-2 py-2">
+              <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   checked={inputRecorrente}
                   onChange={e => setInputRecorrente(e.target.checked)}
-                  className="accent-blue-600 scale-110"
+                  className="accent-blue-600 scale-125"
                 />
                 <span className="text-gray-700 font-medium">Recorrente</span>
               </label>
               <select
-                className="border border-gray-200 focus:border-blue-500 outline-none rounded-lg px-4 py-2 w-full sm:w-40 transition"
+                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 w-full md:w-44 transition shadow-sm"
                 value={inputRecorrencia}
                 onChange={e => setInputRecorrencia(e.target.value)}
                 disabled={!inputRecorrente}
@@ -276,7 +283,7 @@ export default function TasksPage() {
                 ))}
               </select>
               <input
-                className="border border-gray-200 focus:border-blue-500 outline-none rounded-lg px-4 py-2 flex-1 transition"
+                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition shadow-sm"
                 type="file"
                 onChange={e => setInputAnexo(e.target.files?.[0] || null)}
               />
@@ -285,7 +292,7 @@ export default function TasksPage() {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-8 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition active:scale-95 flex items-center gap-2 group"
+                className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow hover:bg-blue-700 transition active:scale-95 flex items-center gap-2 group"
               >
                 <span className="inline-block text-xl transition-transform group-hover:scale-125">+</span>
                 Adicionar Tarefa
@@ -293,19 +300,22 @@ export default function TasksPage() {
             </div>
             {erro && <span className="text-red-600 text-base font-medium">{erro}</span>}
           </form>
-          <TaskList
-            tasks={tasks}
-            onRemove={handleRemoveTask}
-            onToggle={handleToggleTask}
-            onAdd={handleAddTask}
-            inputValue={inputTitulo}
-            setInputValue={setInputTitulo}
-            onAddSubtask={() => {}}
-            onToggleSubtask={() => {}}
-            onRemoveSubtask={() => {}}
-            subtaskInputs={{}}
-            setSubtaskInputs={() => {}}
-          />
+          {/* Lista de tarefas */}
+          <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-2 md:p-4">
+            <TaskList
+              tasks={tasks}
+              onRemove={handleRemoveTask}
+              onToggle={handleToggleTask}
+              onAdd={handleAddTask}
+              inputValue={inputTitulo}
+              setInputValue={setInputTitulo}
+              onAddSubtask={() => {}}
+              onToggleSubtask={() => {}}
+              onRemoveSubtask={() => {}}
+              subtaskInputs={{}}
+              setSubtaskInputs={() => {}}
+            />
+          </div>
         </div>
       </main>
       <style jsx global>{`
