@@ -157,11 +157,18 @@ export default function TasksPage() {
     setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
   }
 
+  // Define o padding-left do conteúdo principal conforme o estado do sidebar
+  const sidebarWidth = collapsed ? "w-20 min-w-[5rem]" : "w-72 min-w-[16rem] max-w-[18rem]";
+  const mainPaddingLeft = collapsed ? "md:pl-[5.5rem]" : "md:pl-[18rem]";
+  const contentMaxWidth = collapsed ? "max-w-7xl" : "max-w-6xl";
+
   return (
     <div className={`flex min-h-screen transition-colors duration-300 ${dark ? "bg-neutral-900" : "bg-gray-50"}`}>
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
-      <main className="flex-1 flex flex-col items-center px-2 py-6 md:px-8 md:py-12 transition-colors duration-300">
-        <div className="w-full max-w-[95rem] mx-auto">
+      <main
+        className={`flex-1 flex flex-col items-center px-2 py-6 md:px-8 md:py-12 transition-colors duration-300 ${mainPaddingLeft}`}
+      >
+        <div className={`w-full ${contentMaxWidth}`}>
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-center justify-between mb-10 gap-6">
             <div className="flex items-center gap-4">
