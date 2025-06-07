@@ -52,11 +52,31 @@ export default function TasksPage() {
   const [collapsed, setCollapsed] = useState(false);
   const [erro, setErro] = useState("");
   const tagInputRef = useRef<HTMLInputElement>(null);
+  const [dark, setDark] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token") || "";
     fetchTasks(token).then(setTasks);
+    setDark(window.matchMedia("(prefers-color-scheme: dark)").matches);
   }, []);
+
+  // Interativo: Highlight animation para inputs focados
+  function handleInputFocus(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+    e.currentTarget.classList.add("input-highlight");
+  }
+  function handleInputBlur(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+    e.currentTarget.classList.remove("input-highlight");
+  }
+
+  // Interativo: animação de sucesso ao adicionar tarefa
+  function playSuccessEffect() {
+    const el = document.getElementById("task-form");
+    if (el) {
+      el.classList.remove("animate-success");
+      void el.offsetWidth; // reflow
+      el.classList.add("animate-success");
+    }
+  }
 
   function handleTagAdd() {
     if (inputTagText.trim() && !inputTags.includes(inputTagText.trim())) {
@@ -120,6 +140,7 @@ export default function TasksPage() {
     setInputRecorrente(false);
     setInputRecorrencia("");
     setInputAnexo(null);
+    playSuccessEffect();
   }
 
   async function handleRemoveTask(id: string) {
@@ -137,40 +158,56 @@ export default function TasksPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className={`flex min-h-screen transition-colors duration-300 ${dark ? "bg-neutral-900" : "bg-gray-50"}`}>
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
-      <main className="flex-1 flex flex-col items-center px-2 py-6 md:px-8 md:py-10 bg-white">
-        <div className="w-full max-w-2xl">
+      <main className="flex-1 flex flex-col items-center px-2 py-6 md:px-8 md:py-12 transition-colors duration-300">
+        <div className="w-full max-w-[95rem] mx-auto">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-blue-900">
-              Tarefas
-            </h1>
-            <span className="text-sm text-gray-500 font-medium">
+          <div className="flex flex-col sm:flex-row items-center justify-between mb-10 gap-6">
+            <div className="flex items-center gap-4">
+              <h1 className={`text-3xl sm:text-4xl font-black tracking-tight transition-colors duration-300 ${dark ? "text-white" : "text-gray-900"}`}>
+                Tarefas
+              </h1>
+              <button
+                aria-label="Alternar modo escuro"
+                className={`ml-2 p-2 rounded-full focus:outline-none focus-visible:ring-2 ring-blue-400 
+                  ${dark ? "bg-neutral-800 hover:bg-neutral-700 text-blue-200" : "bg-gray-200 hover:bg-gray-300 text-blue-600"}`}
+                onClick={() => setDark((d) => !d)}
+                tabIndex={0}
+              >
+                {dark ? "🌙" : "☀️"}
+              </button>
+            </div>
+            <span className={`text-sm font-semibold transition-colors duration-300 ${dark ? "text-blue-200" : "text-gray-500"}`}>
               {new Date().toLocaleDateString("pt-BR", { weekday: "long", month: "long", day: "numeric" })}
             </span>
           </div>
           {/* Card do formulário */}
           <form
-            className="mb-10 bg-white shadow-lg rounded-2xl p-4 md:p-8 flex flex-col gap-6 border border-gray-100"
+            id="task-form"
+            className={`mb-12 border ${dark ? "border-neutral-800 bg-neutral-900/90 shadow-lg" : "border-gray-200 bg-white/95 shadow-lg"} rounded-2xl p-6 md:p-10 flex flex-col gap-8 transition-colors duration-300`}
             onSubmit={handleAddTask}
             autoComplete="off"
           >
             {/* Título e Prioridade */}
             <div className="flex flex-col md:flex-row gap-4">
               <input
-                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition placeholder-gray-400 text-base shadow-sm"
+                className={`input-base flex-1 ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
                 placeholder="Título da tarefa *"
                 value={inputTitulo}
                 onChange={e => setInputTitulo(e.target.value)}
                 required
                 maxLength={200}
                 autoFocus
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
               />
               <select
-                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 w-full md:w-44 transition text-base shadow-sm"
+                className={`input-base w-full md:w-44 ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
                 value={inputPrioridade}
                 onChange={e => setInputPrioridade(e.target.value)}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
               >
                 {prioridadeOptions.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -179,42 +216,50 @@ export default function TasksPage() {
             </div>
             {/* Descrição */}
             <textarea
-              className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 resize-none transition placeholder-gray-400 text-base shadow-sm"
+              className={`input-base resize-none ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
               placeholder="Descrição (opcional)"
               value={inputDescricao}
               onChange={e => setInputDescricao(e.target.value)}
               rows={2}
               maxLength={500}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
             />
             {/* Data, Categoria, Responsável */}
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <input
-                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition placeholder-gray-400 shadow-sm"
+                className={`input-base ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
                 type="date"
                 value={inputDataLimite}
                 onChange={e => setInputDataLimite(e.target.value)}
                 placeholder="Data limite"
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
               />
               <input
-                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition placeholder-gray-400 shadow-sm"
+                className={`input-base ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
                 placeholder="Categoria"
                 value={inputCategoria}
                 onChange={e => setInputCategoria(e.target.value)}
                 maxLength={100}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
               />
               <input
-                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition placeholder-gray-400 shadow-sm"
+                className={`input-base ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
                 placeholder="Responsável (email ou nome)"
                 value={inputResponsavel}
                 onChange={e => setInputResponsavel(e.target.value)}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
               />
             </div>
             {/* Tags */}
-            <div className="flex flex-col gap-2">
-              <div className="flex gap-2">
+            <div>
+              <div className="flex gap-2 mb-2">
                 <input
                   ref={tagInputRef}
-                  className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 transition placeholder-gray-400 shadow-sm"
+                  className={`input-base flex-1 ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
                   placeholder="Adicionar tag"
                   value={inputTagText}
                   onChange={e => setInputTagText(e.target.value)}
@@ -225,12 +270,18 @@ export default function TasksPage() {
                       handleTagAdd();
                     }
                   }}
+                  onFocus={handleInputFocus}
+                  onBlur={handleInputBlur}
                 />
                 <button
                   type="button"
-                  className="bg-blue-50 text-blue-700 px-4 py-3 rounded-lg font-bold hover:bg-blue-100 transition active:scale-95 shadow"
+                  className={`transition px-4 py-3 rounded-lg font-bold shadow-md focus:outline-none focus-visible:ring-2 ring-blue-400 active:scale-95
+                    ${dark
+                      ? "bg-blue-700 text-white hover:bg-blue-600"
+                      : "bg-blue-50 text-blue-700 hover:bg-blue-100"}`}
                   title="Adicionar tag"
                   onClick={handleTagAdd}
+                  tabIndex={0}
                 >
                   <span className="text-xl">+</span>
                 </button>
@@ -239,7 +290,10 @@ export default function TasksPage() {
                 {inputTags.map(tag => (
                   <span
                     key={tag}
-                    className="bg-blue-50 border border-blue-200 text-blue-700 px-3 py-1 rounded-lg flex items-center gap-1 text-sm animate-fade-in shadow-sm"
+                    className={`flex items-center gap-1 px-3 py-1 rounded-2xl border text-sm animate-fade-in
+                      ${dark
+                        ? "bg-blue-900/60 border-blue-800 text-blue-200"
+                        : "bg-blue-50 border-blue-200 text-blue-800"}`}
                   >
                     {tag}
                     <button
@@ -247,6 +301,7 @@ export default function TasksPage() {
                       className="ml-1 text-xs text-red-500 hover:text-red-700 font-bold"
                       onClick={() => handleTagRemove(tag)}
                       title="Remover tag"
+                      tabIndex={0}
                     >
                       ×
                     </button>
@@ -255,13 +310,15 @@ export default function TasksPage() {
               </div>
             </div>
             {/* Lembrete, Recorrência, Anexo */}
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <input
-                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition placeholder-gray-400 shadow-sm"
+                className={`input-base ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
                 type="datetime-local"
                 value={inputLembrete}
                 onChange={e => setInputLembrete(e.target.value)}
                 placeholder="Lembrete"
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
               />
               <label className="flex items-center gap-2">
                 <input
@@ -270,38 +327,45 @@ export default function TasksPage() {
                   onChange={e => setInputRecorrente(e.target.checked)}
                   className="accent-blue-600 scale-125"
                 />
-                <span className="text-gray-700 font-medium">Recorrente</span>
+                <span className={`font-medium ${dark ? "text-blue-100" : "text-gray-700"}`}>Recorrente</span>
               </label>
               <select
-                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 w-full md:w-44 transition shadow-sm"
+                className={`input-base ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
                 value={inputRecorrencia}
                 onChange={e => setInputRecorrencia(e.target.value)}
                 disabled={!inputRecorrente}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
               >
                 {recorrenciaOptions.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
               <input
-                className="border border-gray-200 focus:border-blue-400 outline-none rounded-lg px-4 py-3 flex-1 transition shadow-sm"
+                className={`input-base ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
                 type="file"
                 onChange={e => setInputAnexo(e.target.files?.[0] || null)}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
               />
             </div>
             {/* Botão de ação */}
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow hover:bg-blue-700 transition active:scale-95 flex items-center gap-2 group"
+                className={`transition-all duration-200 px-10 py-3 rounded-2xl font-bold shadow-xl flex items-center gap-2 group focus:outline-none focus-visible:ring-2 ring-blue-400
+                  ${dark
+                    ? "bg-blue-700 text-white hover:bg-blue-900"
+                    : "bg-blue-600 text-white hover:bg-blue-700 active:scale-95"}`}
               >
-                <span className="inline-block text-xl transition-transform group-hover:scale-125">+</span>
+                <span className="inline-block text-2xl transition-transform group-hover:scale-125">+</span>
                 Adicionar Tarefa
               </button>
             </div>
-            {erro && <span className="text-red-600 text-base font-medium">{erro}</span>}
+            {erro && <span className="text-red-400 text-base font-medium">{erro}</span>}
           </form>
           {/* Lista de tarefas */}
-          <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-2 md:p-4">
+          <div className={`rounded-2xl shadow-xl border ${dark ? "border-neutral-800 bg-neutral-900/80" : "border-gray-200 bg-white"} p-2 md:p-6 transition-colors duration-300`}>
             <TaskList
               tasks={tasks}
               onRemove={handleRemoveTask}
@@ -319,12 +383,35 @@ export default function TasksPage() {
         </div>
       </main>
       <style jsx global>{`
-        .animate-fade-in {
-          animation: fadeIn 0.3s;
+        .animate-fade-in { animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: none;}}
+        .input-base {
+          border-radius: 1rem;
+          border: 2px solid #e5e7eb;
+          padding: 0.75rem 1.25rem;
+          font-size: 1.09rem;
+          outline: none;
+          transition: border 0.2s, box-shadow 0.2s, background 0.2s;
+          box-shadow: 0 1px 2px rgb(0 0 0 / 0.01);
         }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(8px);}
-          to { opacity: 1; transform: none;}
+        .input-base:focus {
+          border-color: #2563eb;
+          box-shadow: 0 0 0 2px #2563eb22;
+          background: #f1f5fd;
+        }
+        .input-base.input-highlight {
+          background: #f1f5fd;
+          border-color: #2563eb;
+          box-shadow: 0 0 0 2px #2563eb22;
+        }
+        /* Efeito de sucesso ao adicionar tarefa */
+        #task-form.animate-success {
+          animation: taskFormSuccess 0.5s;
+        }
+        @keyframes taskFormSuccess {
+          0% { box-shadow: 0 0 0 0 #2563eb40; }
+          50% { box-shadow: 0 0 24px 8px #2563eb60; }
+          100% { box-shadow: 0 0 0 0 #2563eb00; }
         }
       `}</style>
     </div>
