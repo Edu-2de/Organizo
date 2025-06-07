@@ -19,4 +19,6 @@ class TarefaViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'put', 'patch', 'delete']
     lookup_field = 'id'
 
+    def perform_create(self, serializer):
+        serializer.save(usuario=self.request.user)
   

@@ -1,426 +1,163 @@
 "use client";
-
-import { useEffect, useState, FormEvent, useRef } from "react";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
-import TaskList from "@/components/TaskList";
-import { fetchTasks, createTask, deleteTask, toggleTask } from "@/api/taskApi";
+import { getTarefas, atualizarTarefa, deletarTarefa } from "@/api/taskApi";
 
-type Task = {
+type Tarefa = {
   id: string;
   titulo: string;
-  descricao?: string;
-  prioridade?: string;
+  descricao: string;
+  prioridade: string;
+  concluida: boolean;
   data_limite?: string;
   categoria?: string;
-  responsavel?: string;
-  anexo?: string;
-  tags?: string[];
-  lembrete?: string;
-  recorrente?: boolean;
-  recorrencia?: string;
-  concluida: boolean;
 };
 
-const prioridadeOptions = [
-  { value: "baixa", label: "Baixa" },
-  { value: "media", label: "Média" },
-  { value: "alta", label: "Alta" },
-];
-
-const recorrenciaOptions = [
-  { value: "", label: "Nenhuma" },
-  { value: "diaria", label: "Diária" },
-  { value: "semanal", label: "Semanal" },
-  { value: "mensal", label: "Mensal" },
-  { value: "anual", label: "Anual" },
-];
-
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [inputTitulo, setInputTitulo] = useState("");
-  const [inputDescricao, setInputDescricao] = useState("");
-  const [inputPrioridade, setInputPrioridade] = useState("media");
-  const [inputDataLimite, setInputDataLimite] = useState("");
-  const [inputCategoria, setInputCategoria] = useState("");
-  const [inputResponsavel, setInputResponsavel] = useState("");
-  const [inputTags, setInputTags] = useState<string[]>([]);
-  const [inputTagText, setInputTagText] = useState("");
-  const [inputLembrete, setInputLembrete] = useState("");
-  const [inputRecorrente, setInputRecorrente] = useState(false);
-  const [inputRecorrencia, setInputRecorrencia] = useState("");
-  const [inputAnexo, setInputAnexo] = useState<File | null>(null);
-  const [collapsed, setCollapsed] = useState(false);
-  const [erro, setErro] = useState("");
-  const tagInputRef = useRef<HTMLInputElement>(null);
-  const [dark, setDark] = useState(false);
+  const [tarefas, setTarefas] = useState<Tarefa[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token") || "";
-    fetchTasks(token).then(setTasks);
-    setDark(window.matchMedia("(prefers-color-scheme: dark)").matches);
+    getTarefas()
+      .then(setTarefas)
+      .catch(() => setTarefas([]))
+      .finally(() => setLoading(false));
   }, []);
 
-  // Interativo: Highlight animation para inputs focados
-  function handleInputFocus(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-    e.currentTarget.classList.add("input-highlight");
-  }
-  function handleInputBlur(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-    e.currentTarget.classList.remove("input-highlight");
-  }
+  const handleAtualizarTarefa = async (id: string, data: Partial<Tarefa>) => {
+    await atualizarTarefa(id, data);
+    setTarefas((tarefas) =>
+      tarefas.map((t) => (t.id === id ? { ...t, ...data } : t))
+    );
+  };
 
-  // Interativo: animação de sucesso ao adicionar tarefa
-  function playSuccessEffect() {
-    const el = document.getElementById("task-form");
-    if (el) {
-      el.classList.remove("animate-success");
-      void el.offsetWidth; // reflow
-      el.classList.add("animate-success");
-    }
-  }
-
-  function handleTagAdd() {
-    if (inputTagText.trim() && !inputTags.includes(inputTagText.trim())) {
-      setInputTags([...inputTags, inputTagText.trim()]);
-      setInputTagText("");
-      setTimeout(() => tagInputRef.current?.focus(), 100);
-    }
-  }
-
-  function handleTagRemove(tag: string) {
-    setInputTags(inputTags.filter(t => t !== tag));
-  }
-
-  async function handleAddTask(e: FormEvent) {
-    e.preventDefault();
-    setErro("");
-    if (!inputTitulo.trim()) {
-      setErro("O título é obrigatório.");
-      return;
-    }
-    const token = localStorage.getItem("token") || "";
-
-    let newTask;
-    if (inputAnexo) {
-      const formData = new FormData();
-      formData.append("titulo", inputTitulo);
-      formData.append("descricao", inputDescricao);
-      formData.append("prioridade", inputPrioridade);
-      if (inputDataLimite) formData.append("data_limite", inputDataLimite);
-      if (inputCategoria) formData.append("categoria", inputCategoria);
-      if (inputResponsavel) formData.append("responsavel", inputResponsavel);
-      if (inputLembrete) formData.append("lembrete", inputLembrete);
-      formData.append("recorrente", inputRecorrente ? "true" : "false");
-      if (inputRecorrencia) formData.append("recorrencia", inputRecorrencia);
-      formData.append("anexo", inputAnexo);
-      inputTags.forEach(tag => formData.append("tags", tag));
-      newTask = await createTask(token, formData, true);
-    } else {
-      newTask = await createTask(token, {
-        titulo: inputTitulo,
-        descricao: inputDescricao,
-        prioridade: inputPrioridade,
-        data_limite: inputDataLimite ? inputDataLimite : undefined,
-        categoria: inputCategoria,
-        responsavel: inputResponsavel,
-        tags: inputTags,
-        lembrete: inputLembrete,
-        recorrente: inputRecorrente,
-        recorrencia: inputRecorrencia,
-      });
-    }
-    setTasks((prev) => [newTask, ...prev]);
-    setInputTitulo("");
-    setInputDescricao("");
-    setInputPrioridade("media");
-    setInputDataLimite("");
-    setInputCategoria("");
-    setInputResponsavel("");
-    setInputTags([]);
-    setInputLembrete("");
-    setInputRecorrente(false);
-    setInputRecorrencia("");
-    setInputAnexo(null);
-    playSuccessEffect();
-  }
-
-  async function handleRemoveTask(id: string) {
-    const token = localStorage.getItem("token") || "";
-    await deleteTask(token, id);
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-  }
-
-  async function handleToggleTask(id: string) {
-    const token = localStorage.getItem("token") || "";
-    const task = tasks.find((t) => t.id === id);
-    if (!task) return;
-    const updated = await toggleTask(token, id, !task.concluida);
-    setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
-  }
-
-  // Define o padding-left do conteúdo principal conforme o estado do sidebar
-  const sidebarWidth = collapsed ? "w-20 min-w-[5rem]" : "w-72 min-w-[16rem] max-w-[18rem]";
-  const mainPaddingLeft = collapsed ? "md:pl-[5.5rem]" : "md:pl-[18rem]";
-  const contentMaxWidth = collapsed ? "max-w-7xl" : "max-w-6xl";
+  const handleDeletarTarefa = async (id: string) => {
+    await deletarTarefa(id);
+    setTarefas((tarefas) => tarefas.filter((t) => t.id !== id));
+  };
 
   return (
-    <div className={`flex min-h-screen transition-colors duration-300 ${dark ? "bg-neutral-900" : "bg-gray-50"}`}>
-      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
-      <main
-        className={`flex-1 flex flex-col items-center px-2 py-6 md:px-8 md:py-12 transition-colors duration-300 ${mainPaddingLeft}`}
-      >
-        <div className={`w-full ${contentMaxWidth}`}>
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row items-center justify-between mb-10 gap-6">
-            <div className="flex items-center gap-4">
-              <h1 className={`text-3xl sm:text-4xl font-black tracking-tight transition-colors duration-300 ${dark ? "text-white" : "text-gray-900"}`}>
-                Tarefas
-              </h1>
-              <button
-                aria-label="Alternar modo escuro"
-                className={`ml-2 p-2 rounded-full focus:outline-none focus-visible:ring-2 ring-blue-400 
-                  ${dark ? "bg-neutral-800 hover:bg-neutral-700 text-blue-200" : "bg-gray-200 hover:bg-gray-300 text-blue-600"}`}
-                onClick={() => setDark((d) => !d)}
-                tabIndex={0}
-              >
-                {dark ? "🌙" : "☀️"}
-              </button>
-            </div>
-            <span className={`text-sm font-semibold transition-colors duration-300 ${dark ? "text-blue-200" : "text-gray-500"}`}>
-              {new Date().toLocaleDateString("pt-BR", { weekday: "long", month: "long", day: "numeric" })}
-            </span>
-          </div>
-          {/* Card do formulário */}
-          <form
-            id="task-form"
-            className={`mb-12 border ${dark ? "border-neutral-800 bg-neutral-900/90 shadow-lg" : "border-gray-200 bg-white/95 shadow-lg"} rounded-2xl p-6 md:p-10 flex flex-col gap-8 transition-colors duration-300`}
-            onSubmit={handleAddTask}
-            autoComplete="off"
-          >
-            {/* Título e Prioridade */}
-            <div className="flex flex-col md:flex-row gap-4">
-              <input
-                className={`input-base flex-1 ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
-                placeholder="Título da tarefa *"
-                value={inputTitulo}
-                onChange={e => setInputTitulo(e.target.value)}
-                required
-                maxLength={200}
-                autoFocus
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
-              />
-              <select
-                className={`input-base w-full md:w-44 ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
-                value={inputPrioridade}
-                onChange={e => setInputPrioridade(e.target.value)}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
-              >
-                {prioridadeOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </div>
-            {/* Descrição */}
-            <textarea
-              className={`input-base resize-none ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
-              placeholder="Descrição (opcional)"
-              value={inputDescricao}
-              onChange={e => setInputDescricao(e.target.value)}
-              rows={2}
-              maxLength={500}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
-            />
-            {/* Data, Categoria, Responsável */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <input
-                className={`input-base ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
-                type="date"
-                value={inputDataLimite}
-                onChange={e => setInputDataLimite(e.target.value)}
-                placeholder="Data limite"
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
-              />
-              <input
-                className={`input-base ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
-                placeholder="Categoria"
-                value={inputCategoria}
-                onChange={e => setInputCategoria(e.target.value)}
-                maxLength={100}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
-              />
-              <input
-                className={`input-base ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
-                placeholder="Responsável (email ou nome)"
-                value={inputResponsavel}
-                onChange={e => setInputResponsavel(e.target.value)}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
-              />
-            </div>
-            {/* Tags */}
-            <div>
-              <div className="flex gap-2 mb-2">
-                <input
-                  ref={tagInputRef}
-                  className={`input-base flex-1 ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
-                  placeholder="Adicionar tag"
-                  value={inputTagText}
-                  onChange={e => setInputTagText(e.target.value)}
-                  maxLength={50}
-                  onKeyDown={e => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleTagAdd();
-                    }
-                  }}
-                  onFocus={handleInputFocus}
-                  onBlur={handleInputBlur}
-                />
-                <button
-                  type="button"
-                  className={`transition px-4 py-3 rounded-lg font-bold shadow-md focus:outline-none focus-visible:ring-2 ring-blue-400 active:scale-95
-                    ${dark
-                      ? "bg-blue-700 text-white hover:bg-blue-600"
-                      : "bg-blue-50 text-blue-700 hover:bg-blue-100"}`}
-                  title="Adicionar tag"
-                  onClick={handleTagAdd}
-                  tabIndex={0}
-                >
-                  <span className="text-xl">+</span>
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {inputTags.map(tag => (
-                  <span
-                    key={tag}
-                    className={`flex items-center gap-1 px-3 py-1 rounded-2xl border text-sm animate-fade-in
-                      ${dark
-                        ? "bg-blue-900/60 border-blue-800 text-blue-200"
-                        : "bg-blue-50 border-blue-200 text-blue-800"}`}
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <Sidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
+      <main className={`flex-1 px-2 md:px-8 py-8 transition-all duration-300 ${sidebarCollapsed ? "ml-20" : "ml-72"}`}>
+        <div className="flex items-center justify-between mb-10">
+          <h1 className="text-4xl font-extrabold text-gray-800 tracking-tight">Quadro de Tarefas</h1>
+          <Link href="/dashboard/tasks/nova">
+            <button className="bg-blue-600 text-white px-6 py-2 rounded-xl shadow-md hover:bg-blue-700 transition font-semibold">
+              + Nova Tarefa
+            </button>
+          </Link>
+        </div>
+        <div className="flex flex-col md:flex-row gap-8 justify-center">
+          {/* Pendentes */}
+          <section className="flex-1 min-w-[320px]">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 flex flex-col h-full">
+              <h2 className="text-2xl font-bold text-gray-700 mb-6 border-b pb-2">Pendentes</h2>
+              <div className="flex flex-col gap-5 flex-1">
+                {loading && <div className="text-gray-400 text-center">Carregando tarefas...</div>}
+                {tarefas.filter(t => !t.concluida).length === 0 && !loading && (
+                  <div className="text-gray-400 text-center">Nenhuma tarefa pendente.</div>
+                )}
+                {tarefas.filter(t => !t.concluida).map((t) => (
+                  <div
+                    key={t.id}
+                    className="group bg-gray-50 border border-gray-200 rounded-xl p-4 shadow-sm flex flex-col gap-2 hover:shadow-lg transition relative"
                   >
-                    {tag}
-                    <button
-                      type="button"
-                      className="ml-1 text-xs text-red-500 hover:text-red-700 font-bold"
-                      onClick={() => handleTagRemove(tag)}
-                      title="Remover tag"
-                      tabIndex={0}
-                    >
-                      ×
-                    </button>
-                  </span>
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-lg text-gray-800">{t.titulo}</h3>
+                      <span className={`text-xs px-2 py-1 rounded font-semibold uppercase tracking-wide
+                        ${t.prioridade === "alta"
+                          ? "bg-red-100 text-red-600"
+                          : t.prioridade === "media"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-green-100 text-green-700"
+                        }`}>
+                        {t.prioridade}
+                      </span>
+                    </div>
+                    <p className="text-gray-600">{t.descricao}</p>
+                    <div className="flex flex-wrap gap-3 text-xs text-gray-500 mt-1">
+                      {t.categoria && <span className="bg-gray-200 rounded px-2 py-0.5">{t.categoria}</span>}
+                      <span className="bg-gray-100 rounded px-2 py-0.5">
+                        {t.data_limite ? `Limite: ${new Date(t.data_limite).toLocaleString()}` : "Sem data limite"}
+                      </span>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition font-medium"
+                        onClick={() => handleAtualizarTarefa(t.id, { concluida: true })}
+                      >
+                        Concluir
+                      </button>
+                      <button
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition font-medium"
+                        onClick={() => handleDeletarTarefa(t.id)}
+                      >
+                        Deletar
+                      </button>
+                    </div>
+                    <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-10 bg-blue-400 rounded-r-lg opacity-0 group-hover:opacity-100 transition" />
+                  </div>
                 ))}
               </div>
             </div>
-            {/* Lembrete, Recorrência, Anexo */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <input
-                className={`input-base ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
-                type="datetime-local"
-                value={inputLembrete}
-                onChange={e => setInputLembrete(e.target.value)}
-                placeholder="Lembrete"
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
-              />
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={inputRecorrente}
-                  onChange={e => setInputRecorrente(e.target.checked)}
-                  className="accent-blue-600 scale-125"
-                />
-                <span className={`font-medium ${dark ? "text-blue-100" : "text-gray-700"}`}>Recorrente</span>
-              </label>
-              <select
-                className={`input-base ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
-                value={inputRecorrencia}
-                onChange={e => setInputRecorrencia(e.target.value)}
-                disabled={!inputRecorrente}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
-              >
-                {recorrenciaOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+          </section>
+          {/* Concluídas */}
+          <section className="flex-1 min-w-[320px]">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 flex flex-col h-full">
+              <h2 className="text-2xl font-bold text-gray-700 mb-6 border-b pb-2">Concluídas</h2>
+              <div className="flex flex-col gap-5 flex-1">
+                {tarefas.filter(t => t.concluida).length === 0 && !loading && (
+                  <div className="text-gray-400 text-center">Nenhuma tarefa concluída.</div>
+                )}
+                {tarefas.filter(t => t.concluida).map((t) => (
+                  <div
+                    key={t.id}
+                    className="group bg-gray-50 border border-gray-200 rounded-xl p-4 shadow-sm flex flex-col gap-2 opacity-80 hover:shadow-lg transition relative"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-lg text-gray-800 line-through">{t.titulo}</h3>
+                      <span className={`text-xs px-2 py-1 rounded font-semibold uppercase tracking-wide
+                        ${t.prioridade === "alta"
+                          ? "bg-red-100 text-red-600"
+                          : t.prioridade === "media"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-green-100 text-green-700"
+                        }`}>
+                        {t.prioridade}
+                      </span>
+                    </div>
+                    <p className="text-gray-600">{t.descricao}</p>
+                    <div className="flex flex-wrap gap-3 text-xs text-gray-500 mt-1">
+                      {t.categoria && <span className="bg-gray-200 rounded px-2 py-0.5">{t.categoria}</span>}
+                      <span className="bg-gray-100 rounded px-2 py-0.5">
+                        {t.data_limite ? `Limite: ${new Date(t.data_limite).toLocaleString()}` : "Sem data limite"}
+                      </span>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition font-medium"
+                        onClick={() => handleAtualizarTarefa(t.id, { concluida: false })}
+                      >
+                        Voltar ao quadro
+                      </button>
+                      <button
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition font-medium"
+                        onClick={() => handleDeletarTarefa(t.id)}
+                      >
+                        Deletar
+                      </button>
+                    </div>
+                    <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-1 h-10 bg-green-400 rounded-l-lg opacity-0 group-hover:opacity-100 transition" />
+                  </div>
                 ))}
-              </select>
-              <input
-                className={`input-base ${dark ? "bg-neutral-800 text-blue-100" : "bg-white text-gray-900"}`}
-                type="file"
-                onChange={e => setInputAnexo(e.target.files?.[0] || null)}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
-              />
+              </div>
             </div>
-            {/* Botão de ação */}
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                className={`transition-all duration-200 px-10 py-3 rounded-2xl font-bold shadow-xl flex items-center gap-2 group focus:outline-none focus-visible:ring-2 ring-blue-400
-                  ${dark
-                    ? "bg-blue-700 text-white hover:bg-blue-900"
-                    : "bg-blue-600 text-white hover:bg-blue-700 active:scale-95"}`}
-              >
-                <span className="inline-block text-2xl transition-transform group-hover:scale-125">+</span>
-                Adicionar Tarefa
-              </button>
-            </div>
-            {erro && <span className="text-red-400 text-base font-medium">{erro}</span>}
-          </form>
-          {/* Lista de tarefas */}
-          <div className={`rounded-2xl shadow-xl border ${dark ? "border-neutral-800 bg-neutral-900/80" : "border-gray-200 bg-white"} p-2 md:p-6 transition-colors duration-300`}>
-            <TaskList
-              tasks={tasks}
-              onRemove={handleRemoveTask}
-              onToggle={handleToggleTask}
-              onAdd={handleAddTask}
-              inputValue={inputTitulo}
-              setInputValue={setInputTitulo}
-              onAddSubtask={() => {}}
-              onToggleSubtask={() => {}}
-              onRemoveSubtask={() => {}}
-              subtaskInputs={{}}
-              setSubtaskInputs={() => {}}
-            />
-          </div>
+          </section>
         </div>
       </main>
-      <style jsx global>{`
-        .animate-fade-in { animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: none;}}
-        .input-base {
-          border-radius: 1rem;
-          border: 2px solid #e5e7eb;
-          padding: 0.75rem 1.25rem;
-          font-size: 1.09rem;
-          outline: none;
-          transition: border 0.2s, box-shadow 0.2s, background 0.2s;
-          box-shadow: 0 1px 2px rgb(0 0 0 / 0.01);
-        }
-        .input-base:focus {
-          border-color: #2563eb;
-          box-shadow: 0 0 0 2px #2563eb22;
-          background: #f1f5fd;
-        }
-        .input-base.input-highlight {
-          background: #f1f5fd;
-          border-color: #2563eb;
-          box-shadow: 0 0 0 2px #2563eb22;
-        }
-        /* Efeito de sucesso ao adicionar tarefa */
-        #task-form.animate-success {
-          animation: taskFormSuccess 0.5s;
-        }
-        @keyframes taskFormSuccess {
-          0% { box-shadow: 0 0 0 0 #2563eb40; }
-          50% { box-shadow: 0 0 24px 8px #2563eb60; }
-          100% { box-shadow: 0 0 0 0 #2563eb00; }
-        }
-      `}</style>
     </div>
   );
 }
