@@ -1,10 +1,12 @@
 const API_URL = "http://localhost:8000/api/tarefas/";
 
-function getAuthHeaders() {
+function getAuthHeaders(): Record<string, string> {
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  return token
-    ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
-    : { "Content-Type": "application/json" };
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
 }
 
 export async function getTarefas() {
