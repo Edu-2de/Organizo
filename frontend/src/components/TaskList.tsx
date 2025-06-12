@@ -258,41 +258,48 @@ export default function TaskList({
   const [tasks, setTasks] = useState<TaskType[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    getTarefas()
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .then((apiTasks: any[]) => {
-        const sorted = [...apiTasks]
-          .sort((a, b) => {
-            const dateA = new Date(a.created_at || a.data_limite || 0).getTime();
-            const dateB = new Date(b.created_at || b.data_limite || 0).getTime();
-            return dateB - dateA;
-          })
-          .slice(0, 5)
-          .map(t => ({
-            ...t,
-            text: t.titulo || t.text,
-            done: t.concluida ?? t.done,
-            subtasks: t.subtarefas || [],
-          }));
-        setTasks(sorted);
-      })
-      .catch(() => setTasks([]))
-      .finally(() => setLoading(false));
-  }, []);
+ useEffect(() => {
+  getTarefas()
+    .then((apiTasks: any[]) => {
+      const sorted = [...apiTasks]
+        .sort((a, b) => {
+          const dateA = new Date(a.created_at || a.data_limite || 0).getTime();
+          const dateB = new Date(b.created_at || b.data_limite || 0).getTime();
+          return dateB - dateA;
+        })
+        .slice(0, 5)
+        .map(t => ({
+          ...t,
+          text: t.titulo || t.text,
+          done: t.concluida ?? t.done,
+          completedAt: t.data_conclusao, // <-- aqui!
+          subtasks: t.subtarefas || [],
+        }));
+      setTasks(sorted);
+    })
+    .catch(() => setTasks([]))
+    .finally(() => setLoading(false));
+}, []);
 
   // Função para marcar como concluída/não concluída
   const handleToggle = async (id: number) => {
-    const task = tasks.find(t => t.id === id);
-    if (!task) return;
-    await atualizarTarefa(String(id), { concluida: !task.done });
-    setTasks(tasks =>
-      tasks.map(t =>
-        t.id === id ? { ...t, done: !t.done } : t
-      )
-    );
-  };
-
+  const task = tasks.find(t => t.id === id);
+  if (!task) return;
+  // Atualiza na API
+  const updated = await atualizarTarefa(String(id), { concluida: !task.done });
+  // Atualiza localmente, usando os dados retornados da API (inclui data_conclusao)
+  setTasks(tasks =>
+    tasks.map(t =>
+      t.id === id
+        ? {
+            ...t,
+            done: updated.concluida ?? !t.done,
+            completedAt: updated.data_conclusao ?? (updated.concluida ? new Date().toISOString() : undefined),
+          }
+        : t
+    )
+  );
+};
   return (
     <div>
       <ul className="flex flex-col gap-1">
