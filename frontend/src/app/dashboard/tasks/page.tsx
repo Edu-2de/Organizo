@@ -41,12 +41,11 @@ export default function TasksPage() {
   }, []);
 
 const handleAtualizarTarefa = async (id: string, data: Partial<Tarefa>) => {
-  const updated = await atualizarTarefa(id, data); // updated deve ser o objeto retornado pela API
+  const updated = await atualizarTarefa(id, data); // updated tem o campo data_conclusao correto
   setTarefas((tarefas) =>
     tarefas.map((t) => (t.id === id ? { ...t, ...updated } : t))
   );
 };
-
   const handleDeletarTarefa = async (id: string) => {
     await deletarTarefa(id);
     setTarefas((tarefas) => tarefas.filter((t) => t.id !== id));

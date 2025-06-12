@@ -11,9 +11,7 @@ class TarefaSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         concluida = validated_data.get('concluida', instance.concluida)
         if concluida and not instance.concluida:
-            # Marcou como concluída agora
-            instance.data_conclusao = timezone.now()
+            instance.data_conclusao = timezone.now()  # <-- Adicione esta linha!
         elif not concluida and instance.concluida:
-            # Desmarcou como concluída
-            instance.data_conclusao = None
+            instance.data_conclusao = None           # <-- E esta!
         return super().update(instance, validated_data)
