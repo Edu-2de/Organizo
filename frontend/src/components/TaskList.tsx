@@ -260,6 +260,7 @@ export default function TaskList({
 
  useEffect(() => {
   getTarefas()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .then((apiTasks: any[]) => {
       const sorted = [...apiTasks]
         .sort((a, b) => {

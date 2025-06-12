@@ -21,4 +21,5 @@ class TarefaViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(usuario=self.request.user)
-  
+
+    

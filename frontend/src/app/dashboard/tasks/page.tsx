@@ -40,12 +40,12 @@ export default function TasksPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleAtualizarTarefa = async (id: string, data: Partial<Tarefa>) => {
-    await atualizarTarefa(id, data);
-    setTarefas((tarefas) =>
-      tarefas.map((t) => (t.id === id ? { ...t, ...data } : t))
-    );
-  };
+const handleAtualizarTarefa = async (id: string, data: Partial<Tarefa>) => {
+  const updated = await atualizarTarefa(id, data); // updated deve ser o objeto retornado pela API
+  setTarefas((tarefas) =>
+    tarefas.map((t) => (t.id === id ? { ...t, ...updated } : t))
+  );
+};
 
   const handleDeletarTarefa = async (id: string) => {
     await deletarTarefa(id);
